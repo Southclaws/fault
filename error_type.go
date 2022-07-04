@@ -4,32 +4,37 @@ import (
 	"encoding/json"
 )
 
-// Error implements the Go error type and supports metadata that can easily be
+// fault implements the Go error type and supports metadata that can easily be
 // logged or sent as a response to clients.
-type Error struct {
+type fault struct {
+	// the wrapped error value, either a standard library primitive or any other
+	// error type from the ecosystem of error libraries.
 	underlying error
-	private    Metadata
-	public     Metadata
-}
 
-// Metadata provides a way to annotate errors with additional information that
-// can easily be logged in a structured way.
-type Metadata map[string]interface{}
+	// a simple message annotating this error in the error chain.
+	msg string
+
+	// location context of this particular error context so we don't need to
+	// store a full stack trace of mostly useless info.
+	location string
+
+	// a key-value pair much like context.valueCtx for storing any metadata.
+	key   string
+	value any
+}
 
 // Error implements the error interface.
-func (e *Error) Error() string {
-	return e.underlying.Error()
+func (e *fault) Error() string {
+	return e.msg
 }
 
-func (e *Error) Cause() error  { return e.underlying }
-func (e *Error) Unwrap() error { return e.underlying }
+func (e *fault) Message() string  { return e.msg }
+func (e *fault) Location() string { return e.location }
+func (e *fault) Value() any       { return e.value }
+func (e *fault) Key() string      { return e.key }
 
-// MarshalJSON implements the json.Marshaler interface.
-func (e *Error) MarshalJSON() ([]byte, error) {
-	serialised := e.public
-	serialised["error"] = e.underlying.Error()
-	return json.Marshal(serialised)
-}
+func (e *fault) Cause() error  { return e.underlying }
+func (e *fault) Unwrap() error { return e.underlying }
 
 // unwrapper is from the standard library.
 type unwrapper interface {
@@ -43,8 +48,8 @@ type causer interface {
 
 // interface assertions
 var (
-	_ error          = &Error{}
-	_ json.Marshaler = &Error{}
-	_ unwrapper      = &Error{}
-	_ causer         = &Error{}
+	_ error          = &fault{}
+	_ json.Marshaler = &fault{}
+	_ unwrapper      = &fault{}
+	_ causer         = &fault{}
 )
