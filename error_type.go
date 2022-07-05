@@ -25,6 +25,9 @@ type fault struct {
 
 // Error implements the error interface.
 func (e *fault) Error() string {
+	if e.msg == "" {
+		return e.underlying.Error()
+	}
 	return e.msg
 }
 

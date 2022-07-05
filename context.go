@@ -13,6 +13,8 @@ type POI struct {
 	Value    any    `json:"value,omitempty"`
 }
 
+var zeroValue POI
+
 // Context provides something similar to a stack trace, but much more minimal,
 // focused and simple.
 //
@@ -35,19 +37,23 @@ func Context(err error) []POI {
 
 	for err != nil {
 		step := POI{
-			Message: err.Error(),
+			// Message: err.Error(),
 		}
 
 		if f, ok := err.(withLocation); ok {
+			step.Message = err.Error()
 			step.Location = f.Location()
 		}
 
 		if f, ok := err.(withValue); ok {
+			step.Message = err.Error()
 			step.Key = f.Key()
 			step.Value = f.Value()
 		}
 
-		m = append(m, step)
+		if step != zeroValue {
+			m = append(m, step)
+		}
 
 		err = errors.Unwrap(err)
 	}

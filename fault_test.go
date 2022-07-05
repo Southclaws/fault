@@ -29,7 +29,7 @@ func GetUser(ctx context.Context, id int) (*User, error) {
 	}
 
 	if user == nil {
-		return nil, fault.WithValue(err, "user_id", id)
+		return nil, fault.WithValue(err, "user not found", "user_id", "admin123")
 	}
 
 	return user, nil
@@ -58,11 +58,11 @@ func TestUnwrap(t *testing.T) {
 
 	_, err := GetUser(ctx, -2)
 
-	err = fault.WithValue(err, "userID", "admin123")
+	err = fault.WithValue(err, "step 1", "userID", "admin123")
 
-	err = fault.WithValue(errors.Wrap(err, "problem"), "traceID", "0xdead")
+	err = fault.WithValue(errors.Wrap(err, "problem"), "step 2", "traceID", "0xdead")
 
-	err = fault.WithValue(err, "requestID", "69")
+	err = fault.WithValue(err, "step 3", "requestID", "69")
 
 	// meta := fault.Context(err)
 	// trace := fault.Trace(err)
@@ -71,6 +71,16 @@ func TestUnwrap(t *testing.T) {
 	// pretty.Println(trace)
 
 	b, _ := json.MarshalIndent(err, "", "  ")
+	fmt.Println(string(b))
 
+	_, err = GetUser(ctx, 1)
+
+	err = fault.WithValue(err, "step 1", "userID", "admin123")
+
+	err = fault.WithValue(errors.Wrap(err, "failed to do xyz"), "step 2", "traceID", "0xdead")
+
+	err = fault.WithValue(err, "step 3", "requestID", "69")
+
+	b, _ = json.MarshalIndent(err, "", "  ")
 	fmt.Println(string(b))
 }
