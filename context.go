@@ -2,18 +2,29 @@ package fault
 
 import (
 	"errors"
+	"fmt"
+	"runtime"
+
+	pkg_errors "github.com/pkg/errors"
 )
 
-// POI is a point of interest in the code. Each one of these represents a
-// location where fault has been used to wrap an error with additional context.
-type POI struct {
-	Message  string `json:"message,omitempty"`
-	Location string `json:"location,omitempty"`
-	Key      string `json:"key,omitempty"`
-	Value    any    `json:"value,omitempty"`
+// ErrorInfo represents an unwrapped chain of errors in a serialisable format
+// which you can use with your structured logging solution or server response
+// mechanism. It contains any contextual key-value data as well as a simple call
+// stack style list of "points of interest" where errors have been wrapped with
+// additional call-site specific context.
+type ErrorInfo struct {
+	Message string         `json:"message"`
+	Values  map[string]any `json:"values,omitempty"`
+	Trace   []Location     `json:"trace,omitempty"`
 }
 
-var zeroValue POI
+// Location is a point of interest in the code. Each one of these represents a
+// location where an error has been wrapped in some way with additional context.
+type Location struct {
+	Message  string `json:"message"`
+	Location string `json:"location"`
+}
 
 // Context provides something similar to a stack trace, but much more minimal,
 // focused and simple.
@@ -32,33 +43,38 @@ var zeroValue POI
 // annotate errors as you ascend the call stack and this unrolls all that info
 // in the error chain out to a simple list.
 //
-func Context(err error) []POI {
-	m := []POI{}
+func Context(err error) ErrorInfo {
+	message := err.Error()
+	values := make(map[string]any)
+	trace := make([]Location, 0)
 
 	for err != nil {
-		step := POI{
-			// Message: err.Error(),
+		if f, ok := err.(faultType); ok {
+			if key := f.Key(); key != "" {
+				values[key] = f.Value()
+			}
+
+			trace = append(trace, Location{
+				Message:  err.Error(),
+				Location: f.Location(),
+			})
 		}
 
-		if f, ok := err.(withLocation); ok {
-			step.Message = err.Error()
-			step.Location = f.Location()
-		}
-
-		if f, ok := err.(withValue); ok {
-			step.Message = err.Error()
-			step.Key = f.Key()
-			step.Value = f.Value()
-		}
-
-		if step != zeroValue {
-			m = append(m, step)
+		if f, ok := err.(stackTracer); ok {
+			trace = append(trace, Location{
+				Message:  err.Error(),
+				Location: fmt.Sprintf("%s", f.StackTrace()[0]),
+			})
 		}
 
 		err = errors.Unwrap(err)
 	}
 
-	return m
+	return ErrorInfo{
+		Message: message,
+		Values:  values,
+		Trace:   trace,
+	}
 }
 
 type withLocation interface {
@@ -68,4 +84,24 @@ type withLocation interface {
 type withValue interface {
 	Key() string
 	Value() any
+}
+
+type stackTracer interface {
+	StackTrace() pkg_errors.StackTrace
+}
+
+type faultType interface {
+	withLocation
+	withValue
+}
+
+// getLocation is called from within error constructors, so its always 2 levels
+// deep in relation to the desired source code information.
+func getLocation() string {
+	_, file, line, ok := runtime.Caller(2)
+	if !ok {
+		file = "unknown"
+	}
+
+	return fmt.Sprintf("%s:%d", file, line)
 }
