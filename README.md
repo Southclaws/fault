@@ -62,7 +62,7 @@ func (u *usersController) getUser(w http.ResponseWriter, r *http.Request) {
 // }
 ```
 
-Fault takes a lot of inspiration from the [context](https://pkg.go.dev/context) package. Implements a similar mechanism to `context.WithValue` where you can annotate an element in the chain with some arbitrary metadata.
+Fault takes a lot of inspiration from the [context](https://pkg.go.dev/context) package. Implements a similar mechanism to `context.WithValue` where you can annotate an element in the chain with some arbitrary string-based metadata.
 
 You can use this alongside pkg/errors and pretty much any other error library. It's all based on standard and commonly used interfaces.
 
@@ -134,7 +134,7 @@ But this is still not great. It lacks ergonomics, and when APIs aren't ergonomic
 "failed to do the thing: user:%s transaction:%s payment_reference:%s"
 ```
 
-Another issue is how this is completely unstructured. This is an english sentence with three pieces of _data_ sprinkled within it. While working on a large, continually evolving, codebase with a team of engineers, consistency can sometimes get forgotten. Varying ways of writing errors results in difficult log searches. Structured logging was created to resolve this, but there's no way to turn the above error into a properly structured log entry.
+Another issue is how this is completely unstructured. This is an English sentence with three pieces of _data_ sprinkled within it. While working on a large, continually evolving, codebase with a team of engineers, consistency can sometimes get forgotten. Varying ways of writing errors results in difficult log searches. Structured logging was created to resolve this, but there's no way to turn the above error into a properly structured log entry.
 
 ```json
 failed to do the thing {"user_id":"1234","transaction_id":"9876","payment_reference":"xyzabc"}

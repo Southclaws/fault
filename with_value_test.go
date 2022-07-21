@@ -6,6 +6,7 @@ import (
 
 	pkg_errors "github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Southclaws/fault"
 )
@@ -27,21 +28,13 @@ func TestWithValueNativeErrors(t *testing.T) {
 	assert.Equal(t, "level 3: level 2: level 1: root cause", gotString)
 	assert.Equal(t, "level 3: level 2: level 1: root cause", gotContext.Message)
 
-	assert.Len(t, gotContext.Trace, 3)
-	assert.Equal(t, []fault.Location{
-		{
-			Message:  "level 3: level 2: level 1: root cause",
-			Location: "/Users/southclaws/Work/fault/with_value_test.go:22",
-		},
-		{
-			Message:  "level 2: level 1: root cause",
-			Location: "/Users/southclaws/Work/fault/with_value_test.go:21",
-		},
-		{
-			Message:  "level 1: root cause",
-			Location: "/Users/southclaws/Work/fault/with_value_test.go:20",
-		},
-	}, gotContext.Trace)
+	require.Len(t, gotContext.Trace, 3)
+	assert.Equal(t, "level 3: level 2: level 1: root cause", gotContext.Trace[0].Message)
+	assert.Equal(t, "level 2: level 1: root cause", gotContext.Trace[1].Message)
+	assert.Equal(t, "level 1: root cause", gotContext.Trace[2].Message)
+	assert.Contains(t, gotContext.Trace[0].Location, "with_value_test.go:23")
+	assert.Contains(t, gotContext.Trace[1].Location, "with_value_test.go:22")
+	assert.Contains(t, gotContext.Trace[2].Location, "with_value_test.go:21")
 
 	assert.Equal(t, map[string]any{
 		"context_at_level_1": "x",

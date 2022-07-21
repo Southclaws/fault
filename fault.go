@@ -16,7 +16,7 @@ type fault struct {
 
 	// a key-value pair much like context.valueCtx for storing any metadata.
 	key   string
-	value any
+	value string
 }
 
 // New creates an error with a simple minimal location string.
