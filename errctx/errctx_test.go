@@ -93,6 +93,56 @@ func TestWithMetaNestedManyKeysPlusExtraWrappedKV(t *testing.T) {
 	}, data)
 }
 
+func TestWithMetaOddNumberKV(t *testing.T) {
+	ctx := context.Background()
+	ctx = WithMeta(ctx, "key", "value", "ignored")
+
+	err := Wrap(errors.New("a problem"), ctx)
+	data := Unwrap(err)
+
+	assert.Equal(t, map[string]string{"key": "value"}, data)
+}
+
+func TestWithMetaOddNumberWrapKV(t *testing.T) {
+	ctx := context.Background()
+	ctx = WithMeta(ctx, "key", "value", "ignored")
+
+	err := Wrap(errors.New("a problem"), ctx, "wrapkey", "wrapvalue", "ignored")
+	data := Unwrap(err)
+
+	assert.Equal(t, map[string]string{"key": "value", "wrapkey": "wrapvalue"}, data)
+}
+
+func TestWithMetaOneValueKV(t *testing.T) {
+	ctx := context.Background()
+	ctx = WithMeta(ctx, "ignored")
+
+	err := Wrap(errors.New("a problem"), ctx)
+	data := Unwrap(err)
+
+	assert.Nil(t, data)
+}
+
+func TestWithMetaOneValueWrapKV(t *testing.T) {
+	ctx := context.Background()
+	ctx = WithMeta(ctx, "ignored")
+
+	err := Wrap(errors.New("a problem"), ctx, "wrapkey", "wrapvalue", "ignored")
+	data := Unwrap(err)
+
+	assert.Equal(t, map[string]string{"wrapkey": "wrapvalue"}, data)
+}
+
+func TestWithMetaOneValueEmptyWrapKV(t *testing.T) {
+	ctx := context.Background()
+	ctx = WithMeta(ctx, "ignored")
+
+	err := Wrap(errors.New("a problem"), ctx, "ignored")
+	data := Unwrap(err)
+
+	assert.Nil(t, data)
+}
+
 func TestWithMetaEmpty(t *testing.T) {
 	err := errors.New("a problem")
 	data := Unwrap(err)

@@ -19,10 +19,6 @@ func (e *withContext) String() string { return e.Error() }
 
 // WithMeta wraps a context with some arbitrary string based key-value metadata.
 func WithMeta(ctx context.Context, kv ...string) context.Context {
-	if len(kv)%2 != 0 {
-		panic("odd number of key-value pair arguments")
-	}
-
 	var data map[string]string
 
 	// overwrite any existing context metadata
@@ -32,7 +28,12 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 		data = make(map[string]string)
 	}
 
-	for i := 0; i < len(kv); i += 2 {
+	l := len(kv)
+	if l%2 != 0 {
+		l -= 1 // don't error on odd number of args
+	}
+
+	for i := 0; i < l; i += 2 {
 		k := kv[i]
 		v := kv[i+1]
 
@@ -53,7 +54,7 @@ func Wrap(err error, ctx context.Context, kv ...string) error {
 	l := len(kv)
 	if l >= 2 {
 		if l%2 != 0 {
-			l -= 1
+			l -= 1 // don't error on odd number of args
 		}
 
 		for i := 0; i < l; i += 2 {
