@@ -73,6 +73,26 @@ func TestWithMetaNestedManyKeys(t *testing.T) {
 	}, data)
 }
 
+func TestWithMetaNestedManyKeysPlusExtraWrappedKV(t *testing.T) {
+	ctx := context.Background()
+	ctx = WithMeta(ctx, "key1", "value1")
+	ctx = context.WithValue(ctx, "some other", "stuff")
+	ctx = WithMeta(ctx, "key2", "value2")
+	ctx = WithMeta(ctx, "key3", "value3", "key4", "value4")
+
+	err := Wrap(errors.New("a problem"), ctx, "extra1", "extravalue1", "extra2", "extravalue2")
+	data := Unwrap(err)
+
+	assert.Equal(t, map[string]string{
+		"key1":   "value1",
+		"key2":   "value2",
+		"key3":   "value3",
+		"key4":   "value4",
+		"extra1": "extravalue1",
+		"extra2": "extravalue2",
+	}, data)
+}
+
 func TestWithMetaEmpty(t *testing.T) {
 	err := errors.New("a problem")
 	data := Unwrap(err)
