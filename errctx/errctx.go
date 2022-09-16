@@ -39,11 +39,10 @@ func (e *withContext) String() string { return e.Error() }
 // be an even number of arguments. It's easier to see if you format your code as
 // a list of pairs, like this:
 //
-//     WithMeta(ctx,
-//       "user_id", userID,
-//       "post_id", postID,
-//     )
-//
+//	WithMeta(ctx,
+//		"user_id", userID,
+//		"post_id", postID,
+//	)
 func WithMeta(ctx context.Context, kv ...string) context.Context {
 	var data map[string]string
 
@@ -75,22 +74,25 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 // When errors occurs at a service boundary (such as a call to another package)
 // you should wrap those errors with the available context value like this:
 //
-//     user, err := database.GetUser(ctx, userID)
-//     if err != nil {
-//       return nil, errctx.Wrap(ctx, err, "role", "admin")
-//     }
+//	user, err := database.GetUser(ctx, userID)
+//	if err != nil {
+//		return nil, errctx.Wrap(ctx, err, "role", "admin")
+//	}
 //
 // This library aims to be simple so there is no stack trace collection or
 // additional message parameter. If you need this functionality, use pkg/errors.
 //
-//     user, err := database.GetUser(ctx, userID)
-//     if err != nil {
-//       return nil, errctx.Wrap(ctx,
-//           errors.Wrap(err, "failed to get user data"),
-//           "role", "admin")
-//     }
-//
+//	user, err := database.GetUser(ctx, userID)
+//	if err != nil {
+//		return nil, errctx.Wrap(ctx,
+//			errors.Wrap(err, "failed to get user data"),
+//			"role", "admin")
+//	}
 func Wrap(err error, ctx context.Context, kv ...string) error {
+	if err == nil {
+		panic("nil error passed to Wrap")
+	}
+
 	meta, ok := ctx.Value(contextKey{}).(map[string]string)
 	if !ok {
 		return err
@@ -117,27 +119,26 @@ func Wrap(err error, ctx context.Context, kv ...string) error {
 // string to string map. This data can then be used in your logger of choice, or
 // be serialised to an RPC response of some kind. Below are some examples.
 //
-//     func HandleError(err error) {
-//       metadata := errctx.Unwrap(err)
-//       logger.Log("request error", metadata)
-//     }
+//	func HandleError(err error) {
+//		metadata := errctx.Unwrap(err)
+//		logger.Log("request error", metadata)
+//	}
 //
 // If you use the Echo HTTP library, the error handler is a great use-case:
 //
-//     router.HTTPErrorHandler = func(err error, c echo.Context) {
-//       ec := errctx.Unwrap(err)
+//	router.HTTPErrorHandler = func(err error, c echo.Context) {
+//		ec := errctx.Unwrap(err)
 //
-//       l.Info("request error",
-//         zap.String("error", err.Error()),
-//         zap.Any("metadata", ec),
-//       )
+//		l.Info("request error",
+//		  zap.String("error", err.Error()),
+//		  zap.Any("metadata", ec),
+//		)
 //
-//       c.JSON(500, map[string]any{
-//         "error": err.Error(),
-//         "meta": ec,
-//       })
-//     }
-//
+//		c.JSON(500, map[string]any{
+//		  "error": err.Error(),
+//		  "meta": ec,
+//		})
+//	}
 func Unwrap(err error) map[string]string {
 	values := map[string]string{}
 
@@ -158,4 +159,41 @@ func Unwrap(err error) map[string]string {
 	}
 
 	return values
+}
+
+// GetMeta unwraps the stored metadata from a context value (if any) so you can
+// use it in non-error situations such as structured logging. For example, Zap:
+//
+//	zap.L().Info("post created",
+//		zap.String("key", "value"),
+//		zap.Any("meta", errctx.GetMeta(ctx)),
+//	)
+//
+// This will log your context metadata inside a `meta` keyed object. If you want
+// your metadata on the top level of log entries, you can write a log specific
+// glue layer to output a list of fields, for example, with Zap:
+//
+//	func Z(ctx context.Context) []zap.Field {
+//		fields := []zap.Field{}
+//		for k, v := range GetMeta(ctx) {
+//			fields = append(fields, zap.String(k, v))
+//		}
+//		return fields
+//	}
+//
+// Usage:
+//
+//	zap.L().Info("post created",
+//		zap.String("key", "value"),
+//		Z(ctx)...,
+//	)
+//
+// Which will flatten out the KV metadata from the context into the log entry.
+func GetMeta(ctx context.Context) map[string]string {
+	meta, ok := ctx.Value(contextKey{}).(map[string]string)
+	if !ok {
+		return nil
+	}
+
+	return meta
 }
