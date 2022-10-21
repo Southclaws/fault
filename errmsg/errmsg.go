@@ -6,7 +6,7 @@ import (
 )
 
 // Issue describes an error message that is intended for an end-user to read it.
-// It's named "problem" because this word feels like a non-technical alternative
+// It's named "issue" because this word feels like a "non-technical" alternative
 // to the word "error" which is 1. overused and 2. typically used mainly in tech
 // to describe internal tech issues. Using a different word helps differentiate.
 type Issue = string
