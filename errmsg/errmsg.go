@@ -5,11 +5,11 @@ import (
 	"strings"
 )
 
-// Problem describes an error message that is intended for end-user consumption.
+// Issue describes an error message that is intended for an end-user to read it.
 // It's named "problem" because this word feels like a non-technical alternative
 // to the word "error" which is 1. overused and 2. typically used mainly in tech
 // to describe internal tech issues. Using a different word helps differentiate.
-type Problem = string
+type Issue = string
 
 type withMessage struct {
 	underlying error
@@ -35,15 +35,15 @@ func (e *withMessage) Error() string   { return e.internal }
 func (e *withMessage) Unwrap() error   { return e.underlying }
 func (e *withMessage) Message() string { return e.external }
 
-// GetProblem returns a space-joined string of all end-user intended messages in
-// the error chain. This message can then be displayed/sent to end users.
-func GetProblem(err error) Problem {
-	return Problem(strings.Join(GetProblems(err), " "))
+// GetIssue returns a space-joined string of all end-user issue messages in the
+// error chain. This message can then be displayed/sent to end users.
+func GetIssue(err error) Issue {
+	return Issue(strings.Join(GetIssues(err), " "))
 }
 
-// GetProblems returns all end-user intended messages in the input error chain.
-func GetProblems(err error) []Problem {
-	p := []Problem{}
+// GetIssues returns all end-user intended messages in the input error chain.
+func GetIssues(err error) []Issue {
+	p := []Issue{}
 
 	for err != nil {
 		var wm *withMessage
