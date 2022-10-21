@@ -31,3 +31,9 @@ func TestWithMany(t *testing.T) {
 
 	assert.Equal(t, "Your reply draft has been saved however we could not publish it. Unable to reply to post. The post was not found.", out)
 }
+
+func TestNil(t *testing.T) {
+	assert.Panics(t, func() {
+		Wrap(nil, "oh no", ":(")
+	})
+}
