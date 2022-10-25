@@ -1,5 +1,7 @@
 package fault
 
+import "fmt"
+
 // New creates a new basic fault error.
 func New(message string) error {
 	stack := callers(3)
@@ -30,6 +32,7 @@ func Wrap(err error, w ...wrapper) error {
 			if e.global {
 				// create a new root error for global values to make sure nothing interferes with the stack
 				err = &fault{
+					root:   true,
 					global: e.global,
 					stack:  stack,
 				}
@@ -45,6 +48,8 @@ func Wrap(err error, w ...wrapper) error {
 	default:
 		// return a new root error that wraps the external error
 		return &fault{
+			root:  true,
+			msg:   e.Error(),
 			cause: e,
 			stack: stack,
 		}
@@ -87,6 +92,26 @@ func Unwrap(err error) error {
 	return u.Unwrap()
 }
 
+// StackFrames returns the trace of a root error in the form of a program counter slice.
+// This method is currently called by an external error tracing library (Sentry).
+func (e *fault) StackFrames() []uintptr {
+	return *e.stack
+}
+
+// StackFrames returns the trace of an error in the form of a program counter slice.
+// Use this method if you want to pass the eris stack trace to some other error tracing library.
+func StackFrames(err error) []uintptr {
+	for err != nil {
+		switch err := err.(type) {
+		case *fault:
+			return err.StackFrames()
+		default:
+			return []uintptr{}
+		}
+	}
+	return []uintptr{}
+}
+
 type fault struct {
 	root   bool   // is this error the first in the chain?
 	global bool   // is this a globally declared sentinel error?
@@ -101,6 +126,63 @@ func (f *fault) Error() string {
 		return f.msg
 	} else {
 		return f.cause.Error()
+	}
+}
+
+type Fault struct {
+	Message  string
+	Root     error
+	External error
+	Stack    Stack
+	Chain    []Breadcrumb
+}
+
+type Breadcrumb struct {
+	Message string
+	Frame   StackFrame
+}
+
+func Get(err error) *Fault {
+	if err == nil {
+		return nil
+	}
+
+	var f Fault
+	for err != nil {
+		switch err := err.(type) {
+		case *fault:
+			if err.root {
+				f.Message = err.msg
+				f.Stack = err.stack.get()
+			} else {
+				link := Breadcrumb{
+					Message: err.msg,
+					Frame:   err.frame.get(),
+				}
+				f.Chain = append([]Breadcrumb{link}, f.Chain...)
+			}
+
+		default:
+			f.External = err
+			return &f
+		}
+
+		err = Unwrap(err)
+	}
+
+	return &f
+}
+
+func (f *fault) Format(s fmt.State, verb rune) {
+	u := Get(f)
+
+	s.Write([]byte(u.Message + "\n"))
+
+	for _, v := range u.Chain {
+		if v.Message != "" {
+			s.Write([]byte(fmt.Sprintf("%s\n", v.Message)))
+		}
+		s.Write([]byte(fmt.Sprintf("\t%s\n", v.Frame.String())))
 	}
 }
 

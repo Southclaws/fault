@@ -9,19 +9,6 @@ import (
 // Stack is an array of stack frames stored in a human readable format.
 type Stack []StackFrame
 
-// format returns an array of formatted stack frames.
-func (s Stack) format(sep string, invert bool) []string {
-	var str []string
-	for _, f := range s {
-		if invert {
-			str = append(str, f.format(sep))
-		} else {
-			str = append([]string{f.format(sep)}, str...)
-		}
-	}
-	return str
-}
-
 // StackFrame stores a frame's runtime information in a human readable format.
 type StackFrame struct {
 	Name string
@@ -29,10 +16,7 @@ type StackFrame struct {
 	Line int
 }
 
-// format returns a formatted stack frame.
-func (f *StackFrame) format(sep string) string {
-	return fmt.Sprintf("%v%v%v%v%v", f.Name, sep, f.File, sep, f.Line)
-}
+func (f *StackFrame) String() string { return fmt.Sprintf("%s:%d", f.File, f.Line) }
 
 // caller returns a single stack frame. the argument skip is the number of stack frames
 // to ascend, with 0 identifying the caller of Caller.

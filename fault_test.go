@@ -2,10 +2,10 @@ package fault_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/Southclaws/fault"
-	"github.com/kr/pretty"
 )
 
 var (
@@ -57,7 +57,9 @@ func errorCaller(kind int) error {
 func Test_fault_Format(t *testing.T) {
 	err := errorCaller(1)
 
-	f := err.(interface{ Stack() fault.Stack })
+	// f := err.(interface{ Stack() fault.Stack })
 
-	pretty.Printf("%+v\n", f.Stack())
+	// pretty.Printf("%+v\n", err)
+
+	fmt.Printf("%+v\n", err)
 }
