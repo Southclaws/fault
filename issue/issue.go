@@ -1,4 +1,4 @@
-package errmsg
+package issue
 
 import (
 	"errors"
@@ -38,9 +38,11 @@ func With(internal, external string) func(error) error {
 	}
 }
 
-func (e *withMessage) Error() string   { return e.internal }
-func (e *withMessage) Unwrap() error   { return e.underlying }
-func (e *withMessage) Message() string { return e.external }
+// Error satisfies the error interface by returning the internal error message.
+func (e *withMessage) Error() string { return e.internal }
+
+// Unwrap satisfies the errors unwrap interface.
+func (e *withMessage) Unwrap() error { return e.underlying }
 
 // GetIssue returns a space-joined string of all end-user issue messages in the
 // error chain. This message can then be displayed/sent to end users.
