@@ -51,6 +51,13 @@ func Wrap(parent error, kv ...string) error {
 	}
 }
 
+// With implements the Fault Wrapper interface.
+func With(kv ...string) func(error) error {
+	return func(err error) error {
+		return Wrap(err, kv...)
+	}
+}
+
 // Metadata extracts any previously stored metadata from an error. If there was
 // no metadata found then the return value is nil.
 func Metadata(err error) map[string]string {

@@ -31,6 +31,13 @@ func Wrap(err error, internal, external string) error {
 	}
 }
 
+// With implements the Fault Wrapper interface.
+func With(internal, external string) func(error) error {
+	return func(err error) error {
+		return Wrap(err, internal, external)
+	}
+}
+
 func (e *withMessage) Error() string   { return e.internal }
 func (e *withMessage) Unwrap() error   { return e.underlying }
 func (e *withMessage) Message() string { return e.external }

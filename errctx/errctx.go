@@ -115,6 +115,13 @@ func Wrap(err error, ctx context.Context, kv ...string) error {
 	return &withContext{err, meta}
 }
 
+// With implements the Fault Wrapper interface.
+func With(ctx context.Context) func(error) error {
+	return func(err error) error {
+		return Wrap(err, ctx)
+	}
+}
+
 // Unwrap pulls out any contextual metadata stored within an error as a simple
 // string to string map. This data can then be used in your logger of choice, or
 // be serialised to an RPC response of some kind. Below are some examples.
