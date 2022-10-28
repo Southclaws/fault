@@ -4,16 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"strings"
 )
-
-// New creates a new basic fault error.
-func New(message string) error {
-	return &fault{
-		root:     true,
-		msg:      message,
-		location: getLocation(),
-	}
-}
 
 type wrapper func(err error) error
 
@@ -27,80 +19,55 @@ func Wrap(err error, w ...wrapper) error {
 		err = fn(err)
 	}
 
-	return &fault{
-		root:     false,
+	c := &container{
 		cause:    err,
 		location: getLocation(),
 	}
-}
 
-type fault struct {
-	root     bool   // is this error the first in the chain?
-	global   bool   // is this a globally declared sentinel error?
-	msg      string // root error message
-	cause    error  // if this wraps another error
-	location Location
-}
-
-func (f *fault) Error() string {
-	if f.root {
-		return f.msg
-	} else {
-		return f.cause.Error()
-	}
-}
-
-type Fault struct {
-	Message string
-	Root    error
-	Trace   []Location
-}
-
-type Location string
-
-func Get(err error) *Fault {
-	if err == nil {
-		return nil
+	if _, ok := err.(*container); !ok {
+		c.end = true
 	}
 
-	var f Fault
+	return c
+}
+
+type container struct {
+	cause    error
+	location string
+	end      bool // is this the last one in the chain before an external error?
+}
+
+// Error behaves like most error wrapping libraries, it gives you all the error
+// messages conjoined with ": ". This is useful only for internal error reports,
+// never show this to an end-user or include it in responses as it may reveal
+// internal technical information about your application stack.
+func (f *container) Error() string {
+	errs := []string{}
+	err := f.cause
 	for err != nil {
-		switch err := err.(type) {
-		case *fault:
-			if err.root {
-				f.Message = err.msg
-			} else {
-				f.Trace = append([]Location{err.location}, f.Trace...)
-			}
-
-		default:
-			f.Root = err
-			f.Message = err.Error()
-			return &f
+		if _, is := err.(*container); !is {
+			errs = append(errs, err.Error())
 		}
-
 		err = errors.Unwrap(err)
 	}
-
-	return &f
+	return strings.Join(errs, ": ")
 }
+func (f *container) Unwrap() error { return f.cause }
 
-func (f *fault) Format(s fmt.State, verb rune) {
-	u := Get(f)
+func (f *container) Format(s fmt.State, verb rune) {
+	u := Flatten(f)
 
-	s.Write([]byte(u.Message + "\n"))
-
-	for _, v := range u.Trace {
-		// if v.Message != "" {
-		// 	s.Write([]byte(fmt.Sprintf("%s\n", v.Message)))
-		// }
-		s.Write([]byte(fmt.Sprintf("\t%s\n", v)))
+	for _, v := range u.Errors {
+		if v.Message != "" {
+			s.Write([]byte(fmt.Sprintf("%s\n", v.Message)))
+		}
+		if v.Location != "" {
+			s.Write([]byte(fmt.Sprintf("\t%s\n", v.Location)))
+		}
 	}
 }
 
-func (f *fault) Unwrap() error { return f.cause }
-
-func getLocation() Location {
+func getLocation() string {
 	_, file, line, _ := runtime.Caller(2)
-	return Location(fmt.Sprintf("%s:%d", file, line))
+	return fmt.Sprintf("%s:%d", file, line)
 }
