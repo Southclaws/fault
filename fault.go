@@ -7,10 +7,12 @@ import (
 	"strings"
 )
 
-type wrapper func(err error) error
+// Wrapper describes a kind of middleware that packages can satisfy in order to
+// decorate errors with additional, domain-specific context.
+type Wrapper func(err error) error
 
 // Wrap wraps an error with all of the wrappers provided.
-func Wrap(err error, w ...wrapper) error {
+func Wrap(err error, w ...Wrapper) error {
 	if err == nil {
 		return nil
 	}
