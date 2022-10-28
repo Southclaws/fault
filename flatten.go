@@ -4,11 +4,19 @@ import (
 	"errors"
 )
 
+// Chain represents an unwound error chain. It contains a reference to the root
+// error (the error at the start of the chain, which does not provide any way
+// to `errors.Unwrap` it further) as well as a slice of "Step" objects which are
+// points where the error was wrapped.
 type Chain struct {
 	Root   error
 	Errors []Step
 }
 
+// Step represents a location where an error was wrapped by Fault. The location
+// is present if the error being wrapped contained stack information and the
+// message is present if the underlying error provided a message. Note that not
+// all errors provide errors or locations. If both are missing, it's omitted.
 type Step struct {
 	Location string
 	Message  string

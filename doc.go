@@ -42,9 +42,9 @@
 //
 //	if err != nil {
 //		return fault.Wrap(err,
-//			fault.Ctx(ctx),
-//			fault.Field("user_id", userID),
-//			fault.Issue("A message intended for the end-user to read."),
+//			errctx.Ctx(ctx),
+//			errmeta.Field("user_id", userID),
+//			issues.Issue("A message intended for the end-user to read."),
 //		)
 //	}
 //
