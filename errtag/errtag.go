@@ -45,6 +45,13 @@ func Wrap(parent error, et errorTag) error {
 	}
 }
 
+// With implements the Fault Wrapper interface.
+func With(et errorTag) func(error) error {
+	return func(err error) error {
+		return Wrap(err, et)
+	}
+}
+
 // Tag extracts the error tag of an error chain. If there's no tag, returns nil.
 func Tag(err error) errorTag {
 	for err != nil {
