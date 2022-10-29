@@ -6,6 +6,16 @@ What this facilitates is a simple, minimal and (most important) _composable_ col
 
 This is achieved by annotating errors with **structured** metadata instead of just gluing strings of text together. This approach plays nicely with structured logging tools as well as the existing Go errors ecosystem.
 
+- [Usage](#usage)
+  - [Wrapping errors](#wrapping-errors)
+  - [Handling errors](#handling-errors)
+- [Utilities](#utilities)
+  - [Built-in](#built-in)
+  - [`errctx`](#-errctx-)
+  - [`issue`](#-issue-)
+  - [`kind`](#-kind-)
+- [Appendix](#appendix)
+
 ## Usage
 
 You can gradually adopt Fault into your codebase as it plays nicely with the existing Go error management ecosystem.
@@ -60,7 +70,7 @@ if err != nil {
 
 You can also build your own utilities that work with the Fault option pattern. This is covered later in this document.
 
-## Handling errors
+### Handling errors
 
 Wrapping errors is only half the story, eventually you'll need to actually
 _handle_ the error (and no, `return err` is not "handling" an error, it's
@@ -72,11 +82,11 @@ Utilities will provide their own way of extracting information from an error but
 chain := Flatten(err)
 ```
 
-### `chain.Root`
+#### `chain.Root`
 
 This is the root cause of the error chain. In other words, the error that was either created with `errors.New` (or similar) or some external error from another library not using Fault.
 
-### `chain.Errors`
+#### `chain.Errors`
 
 This is the list of wrapped errors in the chain where the first item is the wrapper of the root cause.
 
@@ -254,7 +264,9 @@ This removes the need to write verbose and explicit `errors.Is` checks on the er
 
 Since the type `Kind` is just an alias to string, you can pass anything and switch on it.
 
-## Rationale
+## Appendix
+
+### Rationale
 
 The reason Fault came into existence was because I found nesting calls to various `Wrap` APIs was really awkward to write and read. The Golang errors ecosystem is diverse but unfortunately, composing together many small error related tools remains awkward due to the simple yet difficult to extend patterns set by the Golang standard library and popular error packages.
 
@@ -266,14 +278,16 @@ errctx.Wrap(errors.Wrap(tracerr.Wrap(err), "failed to get user"), ctx)
 
 Which is a bit of a nightmare to write (many nested calls) and a nightmare to read (not clear where the arguments start and end for each function). Because of this, it's not common to compose together libraries from the ecosystem.
 
-## Prior art
+### Prior art
+
+Building on the shoulders of giants, as is the open source way. Here are some great libraries I goodartistscopygreatartistssteal'd from:
 
 - https://github.com/rotisserie/eris
 - https://github.com/cockroachdb/logtags
 - https://github.com/cockroachdb/errors/tree/master/contexttags
 - https://pkg.go.dev/google.golang.org/grpc/status
 
-## Why "Fault"?
+### Why "Fault"?
 
 Because the word error is overused.
 
