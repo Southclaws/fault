@@ -1,6 +1,4 @@
-# fault
-
-> _because the word error is overused_
+![header](./docs/header.png)
 
 Fault provides an extensible yet ergonomic mechanism for wrapping errors. It implements this as a kind of middleware style pattern of simple functions called **decorators**: `func(error) error`. A decorator simply wraps an error within another error, much like many libraries do.
 
@@ -82,6 +80,8 @@ This is the root cause of the error chain. In other words, the error that was ei
 
 This is the list of wrapped errors in the chain where the first item is the wrapper of the root cause.
 
+![error chain diagram](./docs/chain.png)
+
 ## Utilities
 
 Fault provides some utilities in subpackages to help you annotate and diagnose problems easily. Fault started its life as a single huge kitchen-sink style library but it quickly became quite bloated and developers rarely used everything it provided. This inspired the simple modular option-style design and each useful component was split into its own package.
@@ -106,6 +106,8 @@ And, as with any simple wrapping library, the `.Error()` function simply joins t
 If this is all you ever need, just use pkg/errors or `fmt.Errorf`.
 
 ### `errctx`
+
+![errctx example](./docs/errctx.png)
 
 Error context is the missing link between the context package and errors. Contexts often contain bits of metadata about a call stack in large scale applications. Things like trace IDs, request IDs, user IDs, etc.
 
@@ -171,6 +173,8 @@ Which is an absolute godsend when things go wrong.
 
 ### `issue`
 
+![end-user error example](./docs/issue.png)
+
 This simple utility gives you the ability to decorate error chains with a separate set of messages intended for an end-user to read. The error messages returned by `.Error()` are always intended for developers to read. They are rarely exposed to end-users. When they are, it's usually fairly confusing and not a great user-experience.
 
 ```go
@@ -213,7 +217,9 @@ issues := GetIssue(err)
 // "Could not move post to the specified category. The category cannot be edited."
 ```
 
-Which reads much nicer than `move post failed: permission denied`.
+Which, while it reads much nicer than `move post failed: permission denied`, both messages are valuable to their individual target audiences.
+
+Further reading on the topic of human-friendly error messages in [this article](https://wix-ux.com/when-life-gives-you-lemons-write-better-error-messages-46c5223e1a2f).
 
 ### `kind`
 
@@ -266,3 +272,9 @@ Which is a bit of a nightmare to write (many nested calls) and a nightmare to re
 - https://github.com/cockroachdb/logtags
 - https://github.com/cockroachdb/errors/tree/master/contexttags
 - https://pkg.go.dev/google.golang.org/grpc/status
+
+## Why "Fault"?
+
+Because the word error is overused.
+
+![errors everywhere](./docs/errors.png)
