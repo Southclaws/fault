@@ -1,3 +1,8 @@
+// Package fault provides an extensible yet ergonomic mechanism for wrapping
+// errors. It implements this as a kind of middleware style pattern by providing
+// a simple option-style interface that can be passed to a call to `fault.Wrap`.
+//
+// See the GitHub repository for full documentation and examples.
 package fault
 
 import (
@@ -54,6 +59,7 @@ func (f *container) Error() string {
 	}
 	return strings.Join(errs, ": ")
 }
+
 func (f *container) Unwrap() error { return f.cause }
 
 func (f *container) Format(s fmt.State, verb rune) {
