@@ -1,6 +1,6 @@
 ![header](./docs/header.png)
 
-Fault provides an extensible yet ergonomic mechanism for wrapping errors. It implements this as a kind of middleware style pattern of simple functions called **decorators**: `func(error) error`. A decorator simply wraps an error within another error, much like many libraries do.
+Fault provides an extensible yet ergonomic mechanism for wrapping errors. It implements this as a ftag of middleware style pattern of simple functions called **decorators**: `func(error) error`. A decorator simply wraps an error within another error, much like many libraries do.
 
 What this facilitates is a simple, minimal and (most important) _composable_ collection of error handling utilities designed to help you **diagnose problems** in your application logic without the need for overly verbose stack traces.
 
@@ -11,9 +11,9 @@ This is achieved by annotating errors with **structured** metadata instead of ju
   - [Handling errors](#handling-errors)
 - [Utilities](#utilities)
   - [Built-in](#built-in)
-  - [`errctx`](#-errctx-)
-  - [`issue`](#-issue-)
-  - [`kind`](#-kind-)
+  - [`fctx`](#-fctx-)
+  - [`fdesc`](#-fdesc-)
+  - [`ftag`](#-ftag-)
 - [Appendix](#appendix)
 
 ## Usage
@@ -61,9 +61,9 @@ The power comes when you make use of some of the additional packages available a
 ```go
 if err != nil {
     return fault.Wrap(err,
-        errctx.With(ctx), // decorate the error with key-value metadata from context
-        kind.With(kind.NotFound), // categorise the error as a "not found"
-        issue.With("failed to do something", "There was a technical error while retrieving your account"), // provide an end-user message
+        fctx.With(ctx), // decorate the error with key-value metadata from context
+        ftag.With(ftag.NotFound), // categorise the error as a "not found"
+        fdesc.With("failed to do something", "There was a technical error while retrieving your account"), // provide an end-user message
     )
 }
 ```
@@ -115,22 +115,22 @@ And, as with any simple wrapping library, the `.Error()` function simply joins t
 
 If this is all you ever need, just use pkg/errors or `fmt.Errorf`.
 
-### `errctx`
+### `fctx`
 
-![errctx example](./docs/errctx.png)
+![fctx example](./docs/fctx.png)
 
 Error context is the missing link between the context package and errors. Contexts often contain bits of metadata about a call stack in large scale applications. Things like trace IDs, request IDs, user IDs, etc.
 
 The problem is, once an error occurs and the stack starts to "unwind" (chained returns until the error is truly "handled" somewhere) the information stored in a context has already gone.
 
-errctx gives you two tools to help understand the actual _context_ around a problem.
+fctx gives you two tools to help understand the actual _context_ around a problem.
 
 #### Add metadata to a context
 
 First, you decorate contexts with key-value data. Strings only and no nesting for simplicity.
 
 ```go
-ctx = errctx.WithMeta(ctx, "trace_id", traceID)
+ctx = fctx.WithMeta(ctx, "trace_id", traceID)
 ```
 
 This stores the `traceID` value into the context. Conflicting keys will overwrite.
@@ -144,7 +144,7 @@ When something goes wrong, all that metadata stored in a context can be copied i
 ```go
 if err != nil {
     return fault.Wrap(err,
-        errctx.With(ctx),
+        fctx.With(ctx),
     )
 }
 ```
@@ -154,7 +154,7 @@ if err != nil {
 When your error chain is handled, you most likely want to log what happened. You can access key-value metadata from an error using `Unwrap`:
 
 ```go
-ec := errctx.Unwrap(err)
+ec := fctx.Unwrap(err)
 logger.Error("http handler failed", ec)
 ```
 
@@ -183,16 +183,16 @@ They look like this:
 
 Which is an absolute godsend when things go wrong.
 
-### `issue`
+### `fdesc`
 
-![end-user error example](./docs/issue.png)
+![end-user error example](./docs/fdesc.png)
 
 This simple utility gives you the ability to decorate error chains with a separate set of messages intended for an end-user to read. The error messages returned by `.Error()` are always intended for developers to read. They are rarely exposed to end-users. When they are, it's usually fairly confusing and not a great user-experience.
 
 ```go
 if err != nil {
     return fault.Wrap(err,
-        issue.With("permission denied", "The post is not accessible from this account."),
+        fdesc.With("permission denied", "The post is not accessible from this account."),
     )
 }
 ```
@@ -209,7 +209,7 @@ Multiple wrapped issues are conjoined with a single space. Issue messages should
 ```go
 if err != nil {
     return fault.Wrap(err,
-        issue.With("permission denied", "The category cannot be edited."),
+        fdesc.With("permission denied", "The category cannot be edited."),
     )
 }
 
@@ -217,7 +217,7 @@ if err != nil {
 
 if err != nil {
     return fault.Wrap(err,
-        issue.With("move post failed", "Could not move post to the specified category."),
+        fdesc.With("move post failed", "Could not move post to the specified category."),
     )
 }
 ```
@@ -233,7 +233,7 @@ Which, while it reads much nicer than `move post failed: permission denied`, bot
 
 Further reading on the topic of human-friendly error messages in [this article](https://wix-ux.com/when-life-gives-you-lemons-write-better-error-messages-46c5223e1a2f).
 
-### `kind`
+### `ftag`
 
 This utility simply annotates an entire error chain with a single string. This facilitates categorising error chains with a simple token that allows mapping errors to response mechanisms such as HTTP status codes or gRPC status codes.
 
@@ -242,7 +242,7 @@ You can use the included error kinds which cover a wide variety of common catego
 ```go
 if err != nil {
     return fault.Wrap(err,
-        kind.With(kind.NotFound),
+        ftag.With(ftag.NotFound),
     )
 }
 ```
@@ -250,11 +250,11 @@ if err != nil {
 Once you've annotated an error chain, you can use it later to determine which HTTP status to respond with:
 
 ```go
-ek := kind.Get(err)
-// kind.NotFound = "NOT_FOUND"
+ek := ftag.Get(err)
+// ftag.NotFound = "NOT_FOUND"
 
 switch ek {
-  case kind.NotFound:
+  case ftag.NotFound:
     return http.StatusNotFound
   // others...
   default:
@@ -272,10 +272,10 @@ Since the type `Kind` is just an alias to string, you can pass anything and swit
 
 The reason Fault came into existence was because I found nesting calls to various `Wrap` APIs was really awkward to write and read. The Golang errors ecosystem is diverse but unfortunately, composing together many small error related tools remains awkward due to the simple yet difficult to extend patterns set by the Golang standard library and popular error packages.
 
-For example, to combine pkg/errors, tracerr and errctx you'd have to write:
+For example, to combine pkg/errors, tracerr and fctx you'd have to write:
 
 ```
-errctx.Wrap(errors.Wrap(tracerr.Wrap(err), "failed to get user"), ctx)
+fctx.Wrap(errors.Wrap(tracerr.Wrap(err), "failed to get user"), ctx)
 ```
 
 Which is a bit of a nightmare to write (many nested calls) and a nightmare to read (not clear where the arguments start and end for each function). Because of this, it's not common to compose together libraries from the ecosystem.
