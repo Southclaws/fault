@@ -55,8 +55,7 @@ func GetIssues(err error) []Issue {
 	p := []Issue{}
 
 	for err != nil {
-		var wm *withMessage
-		if errors.As(err, &wm) {
+		if wm, ok := err.(*withMessage); ok {
 			p = append(p, wm.external)
 		}
 
