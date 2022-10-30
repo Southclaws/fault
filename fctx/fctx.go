@@ -1,4 +1,4 @@
-// Package errctx facilitates storing simple string based key-value data into
+// Package fctx facilitates storing simple string based key-value data into
 // contexts and then wrapping error values with that data so top-level error
 // handlers have access to the data from the entire call chain.
 //
@@ -8,7 +8,7 @@
 // the error with a contextual error which contains the key-value data that was
 // stored in the `context.Context` value. Then when your error is handled, you
 // can easily extract this metadata for logging or error message purposes.
-package errctx
+package fctx
 
 import (
 	"context"
@@ -23,7 +23,7 @@ type withContext struct {
 	meta       map[string]string
 }
 
-func (e *withContext) Error() string  { return "<errctx>" }
+func (e *withContext) Error() string  { return "<fctx>" }
 func (e *withContext) Cause() error   { return e.underlying }
 func (e *withContext) Unwrap() error  { return e.underlying }
 func (e *withContext) String() string { return e.Error() }
@@ -76,7 +76,7 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 //
 //	user, err := database.GetUser(ctx, userID)
 //	if err != nil {
-//		return nil, errctx.Wrap(ctx, err, "role", "admin")
+//		return nil, fctx.Wrap(ctx, err, "role", "admin")
 //	}
 //
 // This library aims to be simple so there is no stack trace collection or
@@ -84,7 +84,7 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 //
 //	user, err := database.GetUser(ctx, userID)
 //	if err != nil {
-//		return nil, errctx.Wrap(ctx,
+//		return nil, fctx.Wrap(ctx,
 //			errors.Wrap(err, "failed to get user data"),
 //			"role", "admin")
 //	}
@@ -127,14 +127,14 @@ func With(ctx context.Context) func(error) error {
 // be serialised to an RPC response of some kind. Below are some examples.
 //
 //	func HandleError(err error) {
-//		metadata := errctx.Unwrap(err)
+//		metadata := fctx.Unwrap(err)
 //		logger.Log("request error", metadata)
 //	}
 //
 // If you use the Echo HTTP library, the error handler is a great use-case:
 //
 //	router.HTTPErrorHandler = func(err error, c echo.Context) {
-//		ec := errctx.Unwrap(err)
+//		ec := fctx.Unwrap(err)
 //
 //		l.Info("request error",
 //		  zap.String("error", err.Error()),
@@ -173,7 +173,7 @@ func Unwrap(err error) map[string]string {
 //
 //	zap.L().Info("post created",
 //		zap.String("key", "value"),
-//		zap.Any("meta", errctx.GetMeta(ctx)),
+//		zap.Any("meta", fctx.GetMeta(ctx)),
 //	)
 //
 // This will log your context metadata inside a `meta` keyed object. If you want
