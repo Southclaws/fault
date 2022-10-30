@@ -13,7 +13,7 @@ type Kind string
 
 // Implements all the interfaces for compatibility with the errors ecosystem.
 
-func (e *withKind) Error() string  { return e.underlying.Error() }
+func (e *withKind) Error() string  { return "<kind>" }
 func (e *withKind) Cause() error   { return e.underlying }
 func (e *withKind) Unwrap() error  { return e.underlying }
 func (e *withKind) String() string { return e.Error() }

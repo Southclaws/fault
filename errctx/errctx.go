@@ -23,7 +23,7 @@ type withContext struct {
 	meta       map[string]string
 }
 
-func (e *withContext) Error() string  { return e.underlying.Error() }
+func (e *withContext) Error() string  { return "<errctx>" }
 func (e *withContext) Cause() error   { return e.underlying }
 func (e *withContext) Unwrap() error  { return e.underlying }
 func (e *withContext) String() string { return e.Error() }
