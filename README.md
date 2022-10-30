@@ -104,9 +104,9 @@ Fault has a single built-in decorator called `Msg`. The only purpose this serves
 
 ```go
 err := errors.New("root")
-fault.Wrap(err, fault.Msg("one"))
-fault.Wrap(err, fault.Msg("two"))
-fault.Wrap(err, fault.Msg("three"))
+err = fault.Wrap(err, fault.Msg("one"))
+err = fault.Wrap(err, fault.Msg("two"))
+err = fault.Wrap(err, fault.Msg("three"))
 fmt.Println(err)
 // three: two: one: root
 ```
@@ -134,6 +134,8 @@ ctx = errctx.WithMeta(ctx, "trace_id", traceID)
 ```
 
 This stores the `traceID` value into the context. Conflicting keys will overwrite.
+
+Note that while this function may look similar to `context.WithValue` in concept, it differs since it permits you to access _all_ of the key-value as a single object for iterating later. When using `context.WithValue` you must know the exact keys. Now you could store a map but in order to add items to that map you would need to first read the map out, check if it exists, insert your key-value data and write it back.
 
 #### Decorate errors with context metadata
 
