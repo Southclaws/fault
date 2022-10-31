@@ -1,4 +1,4 @@
-package fdesc
+package fmsg
 
 import (
 	"errors"
@@ -31,10 +31,20 @@ func Wrap(err error, internal, external string) error {
 	}
 }
 
-// With implements the Fault Wrapper interface.
-func With(internal, external string) func(error) error {
+// With implements the Fault Wrapper interface and calls `Wrap` with just the
+// internal error message. See `Wrap` for more details.
+func With(internal string) func(error) error {
 	return func(err error) error {
-		return Wrap(err, internal, external)
+		return Wrap(err, internal, "")
+	}
+}
+
+// WithDesc allows an additional description message to be set. These messages
+// are accessible by calling `GetIssue` on an error chain. These descriptions
+// are intended to be exposed to end-users as error/diagnostic messages.
+func WithDesc(internal, description string) func(error) error {
+	return func(err error) error {
+		return Wrap(err, internal, description)
 	}
 }
 

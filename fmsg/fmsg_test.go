@@ -1,7 +1,8 @@
-package fdesc
+package fmsg
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -46,6 +47,7 @@ func TestWithManySlice(t *testing.T) {
 
 func TestNil(t *testing.T) {
 	assert.Panics(t, func() {
-		Wrap(nil, "oh no", ":(")
+		err := Wrap(nil, "oh no", ":(")
+		fmt.Println(err)
 	})
 }

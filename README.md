@@ -10,9 +10,8 @@ This is achieved by annotating errors with **structured** metadata instead of ju
   - [Wrapping errors](#wrapping-errors)
   - [Handling errors](#handling-errors)
 - [Utilities](#utilities)
-  - [Built-in](#built-in)
+  - [`fmsg`](#-fmsg-)
   - [`fctx`](#-fctx-)
-  - [`fdesc`](#-fdesc-)
   - [`ftag`](#-ftag-)
 - [Appendix](#appendix)
 
@@ -50,7 +49,7 @@ Fault provides something much more powerful, a mechanism to compose many wrapper
 
 ```go
 if err != nil {
-    return fault.Wrap(err, fault.Msg("failed to do a thing"))
+    return fault.Wrap(err, fmsg.With("failed to do a thing"))
 }
 ```
 
@@ -63,7 +62,7 @@ if err != nil {
     return fault.Wrap(err,
         fctx.With(ctx), // decorate the error with key-value metadata from context
         ftag.With(ftag.NotFound), // categorise the error as a "not found"
-        fdesc.With("failed to do something", "There was a technical error while retrieving your account"), // provide an end-user message
+        fmsg.With("failed to do something", "There was a technical error while retrieving your account"), // provide an end-user message
     )
 }
 ```
@@ -98,22 +97,72 @@ Fault provides some utilities in subpackages to help you annotate and diagnose p
 
 It's worth noting that all of these utilities can be used on their own. If you don't want to use Fault's wrapping or stack traces you can simply import a library and use its `Wrap` function.
 
-### Built-in
+### `fmsg`
 
-Fault has a single built-in decorator called `Msg`. The only purpose this serves is to provide the most basic error wrapping functionality that you'd expect.
+![end-user error example](./docs/fmsg.png)
+
+This simple utility gives you the ability to decorate error chains with a separate set of messages intended for both developers and end-users to read.
+
+The error messages returned by `.Error()` are always intended for developers to read. They are rarely exposed to end-users. When they are, it's usually fairly confusing and not a great user-experience.
+
+You can use `fmsg.With` to wrap an error with an extra string of text, just like pkg/errors and similar:
 
 ```go
 err := errors.New("root")
-err = fault.Wrap(err, fault.Msg("one"))
-err = fault.Wrap(err, fault.Msg("two"))
-err = fault.Wrap(err, fault.Msg("three"))
+err = fault.Wrap(err, fmsg.With("one"))
+err = fault.Wrap(err, fmsg.With("two"))
+err = fault.Wrap(err, fmsg.With("three"))
 fmt.Println(err)
 // three: two: one: root
 ```
 
-And, as with any simple wrapping library, the `.Error()` function simply joins these messages together with `:`.
+As with any simple error wrapping library, the `.Error()` function simply joins these messages together with `:`.
 
-If this is all you ever need, just use pkg/errors or `fmt.Errorf`.
+However, in order to provide useful end-user error descriptions, you can use `fmsg.WithDesc`:
+
+```go
+if err != nil {
+    return fault.Wrap(err,
+        fmsg.WithDesc("permission denied", "The post is not accessible from this account."),
+    )
+}
+```
+
+Once you're ready to render the human-readable errors to end-users, you simply call `GetIssue`:
+
+```go
+issues := GetIssue(err)
+// "The post is not accessible from this account."
+```
+
+Multiple wrapped issues are conjoined with a single space. Issue messages should end in a punctuation mark such as a period.
+
+```go
+if err != nil {
+    return fault.Wrap(err,
+        fmsg.With("permission denied", "The category cannot be edited."),
+    )
+}
+
+// later on
+
+if err != nil {
+    return fault.Wrap(err,
+        fmsg.With("move post failed", "Could not move post to the specified category."),
+    )
+}
+```
+
+Yields:
+
+```go
+issues := GetIssue(err)
+// "Could not move post to the specified category. The category cannot be edited."
+```
+
+Which, while it reads much nicer than `move post failed: permission denied`, both messages are valuable to their individual target audiences.
+
+Further reading on the topic of human-friendly error messages in [this article](https://wix-ux.com/when-life-gives-you-lemons-write-better-error-messages-46c5223e1a2f).
 
 ### `fctx`
 
@@ -182,56 +231,6 @@ They look like this:
 ```
 
 Which is an absolute godsend when things go wrong.
-
-### `fdesc`
-
-![end-user error example](./docs/fdesc.png)
-
-This simple utility gives you the ability to decorate error chains with a separate set of messages intended for an end-user to read. The error messages returned by `.Error()` are always intended for developers to read. They are rarely exposed to end-users. When they are, it's usually fairly confusing and not a great user-experience.
-
-```go
-if err != nil {
-    return fault.Wrap(err,
-        fdesc.With("permission denied", "The post is not accessible from this account."),
-    )
-}
-```
-
-Once you're ready to render the human-readable errors to end-users, you simply call `GetIssue`:
-
-```go
-issues := GetIssue(err)
-// "The post is not accessible from this account."
-```
-
-Multiple wrapped issues are conjoined with a single space. Issue messages should end in a punctuation mark such as a period.
-
-```go
-if err != nil {
-    return fault.Wrap(err,
-        fdesc.With("permission denied", "The category cannot be edited."),
-    )
-}
-
-// later on
-
-if err != nil {
-    return fault.Wrap(err,
-        fdesc.With("move post failed", "Could not move post to the specified category."),
-    )
-}
-```
-
-Yields:
-
-```go
-issues := GetIssue(err)
-// "Could not move post to the specified category. The category cannot be edited."
-```
-
-Which, while it reads much nicer than `move post failed: permission denied`, both messages are valuable to their individual target audiences.
-
-Further reading on the topic of human-friendly error messages in [this article](https://wix-ux.com/when-life-gives-you-lemons-write-better-error-messages-46c5223e1a2f).
 
 ### `ftag`
 
