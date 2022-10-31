@@ -1,5 +1,8 @@
 ![header](./docs/header.png)
 
+[![GoDoc](https://pkg.go.dev/badge/github.com/Southclaws/fault)](https://pkg.go.dev/github.com/Southclaws/fault?tab=doc)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Southclaws/fault)](https://goreportcard.com/report/github.com/Southclaws/fault)
+
 Fault provides an extensible yet ergonomic mechanism for wrapping errors. It implements this as a ftag of middleware style pattern of simple functions called **decorators**: `func(error) error`. A decorator simply wraps an error within another error, much like many libraries do.
 
 What this facilitates is a simple, minimal and (most important) _composable_ collection of error handling utilities designed to help you **diagnose problems** in your application logic without the need for overly verbose stack traces.
