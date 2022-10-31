@@ -1,4 +1,4 @@
-package kind
+package ftag
 
 import (
 	"errors"
