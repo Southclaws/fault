@@ -13,9 +13,9 @@ This is achieved by annotating errors with **structured** metadata instead of ju
   - [Wrapping errors](#wrapping-errors)
   - [Handling errors](#handling-errors)
 - [Utilities](#utilities)
-  - [`fmsg`](#-fmsg-)
-  - [`fctx`](#-fctx-)
-  - [`ftag`](#-ftag-)
+  - [`fmsg`](#fmsg)
+  - [`fctx`](#fctx)
+  - [`ftag`](#ftag)
 - [Appendix](#appendix)
 
 ## Usage
