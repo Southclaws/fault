@@ -1,29 +1,30 @@
-package fctx
+package tests
 
 import (
 	"context"
 	"errors"
 	"testing"
 
+	"github.com/Southclaws/fault/fctx"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestWithMeta(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "key", "value")
+	ctx = fctx.WithMeta(ctx, "key", "value")
 
-	err := Wrap(errors.New("a problem"), ctx)
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx)
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{"key": "value"}, data)
 }
 
 func TestWithMetaAdditional(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "key", "value")
+	ctx = fctx.WithMeta(ctx, "key", "value")
 
-	err := Wrap(errors.New("a problem"), ctx, "additional", "value")
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx, "additional", "value")
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{
 		"key":        "value",
@@ -33,37 +34,37 @@ func TestWithMetaAdditional(t *testing.T) {
 
 func TestWithMetaOverwrite(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "key", "value")
-	ctx = WithMeta(ctx, "key", "value2")
+	ctx = fctx.WithMeta(ctx, "key", "value")
+	ctx = fctx.WithMeta(ctx, "key", "value2")
 
-	err := Wrap(errors.New("a problem"), ctx)
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx)
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{"key": "value2"}, data)
 }
 
 func TestWithMetaNested(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "key", "value")
-	ctx = WithMeta(ctx, "key", "value2")
+	ctx = fctx.WithMeta(ctx, "key", "value")
+	ctx = fctx.WithMeta(ctx, "key", "value2")
 	ctx = context.WithValue(ctx, "some other", "stuff")
-	ctx = WithMeta(ctx, "key", "value3")
+	ctx = fctx.WithMeta(ctx, "key", "value3")
 
-	err := Wrap(errors.New("a problem"), ctx)
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx)
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{"key": "value3"}, data)
 }
 
 func TestWithMetaNestedManyKeys(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "key1", "value1")
+	ctx = fctx.WithMeta(ctx, "key1", "value1")
 	ctx = context.WithValue(ctx, "some other", "stuff")
-	ctx = WithMeta(ctx, "key2", "value2")
-	ctx = WithMeta(ctx, "key3", "value3", "key4", "value4")
+	ctx = fctx.WithMeta(ctx, "key2", "value2")
+	ctx = fctx.WithMeta(ctx, "key3", "value3", "key4", "value4")
 
-	err := Wrap(errors.New("a problem"), ctx)
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx)
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{
 		"key1": "value1",
@@ -75,13 +76,13 @@ func TestWithMetaNestedManyKeys(t *testing.T) {
 
 func TestWithMetaNestedManyKeysPlusExtraWrappedKV(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "key1", "value1")
+	ctx = fctx.WithMeta(ctx, "key1", "value1")
 	ctx = context.WithValue(ctx, "some other", "stuff")
-	ctx = WithMeta(ctx, "key2", "value2")
-	ctx = WithMeta(ctx, "key3", "value3", "key4", "value4")
+	ctx = fctx.WithMeta(ctx, "key2", "value2")
+	ctx = fctx.WithMeta(ctx, "key3", "value3", "key4", "value4")
 
-	err := Wrap(errors.New("a problem"), ctx, "extra1", "extravalue1", "extra2", "extravalue2")
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx, "extra1", "extravalue1", "extra2", "extravalue2")
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{
 		"key1":   "value1",
@@ -95,57 +96,57 @@ func TestWithMetaNestedManyKeysPlusExtraWrappedKV(t *testing.T) {
 
 func TestWithMetaOddNumberKV(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "key", "value", "ignored")
+	ctx = fctx.WithMeta(ctx, "key", "value", "ignored")
 
-	err := Wrap(errors.New("a problem"), ctx)
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx)
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{"key": "value"}, data)
 }
 
 func TestWithMetaOddNumberWrapKV(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "key", "value", "ignored")
+	ctx = fctx.WithMeta(ctx, "key", "value", "ignored")
 
-	err := Wrap(errors.New("a problem"), ctx, "wrapkey", "wrapvalue", "ignored")
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx, "wrapkey", "wrapvalue", "ignored")
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{"key": "value", "wrapkey": "wrapvalue"}, data)
 }
 
 func TestWithMetaOneValueKV(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "ignored")
+	ctx = fctx.WithMeta(ctx, "ignored")
 
-	err := Wrap(errors.New("a problem"), ctx)
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx)
+	data := fctx.Unwrap(err)
 
 	assert.Nil(t, data)
 }
 
 func TestWithMetaOneValueWrapKV(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "ignored")
+	ctx = fctx.WithMeta(ctx, "ignored")
 
-	err := Wrap(errors.New("a problem"), ctx, "wrapkey", "wrapvalue", "ignored")
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx, "wrapkey", "wrapvalue", "ignored")
+	data := fctx.Unwrap(err)
 
 	assert.Equal(t, map[string]string{"wrapkey": "wrapvalue"}, data)
 }
 
 func TestWithMetaOneValueEmptyWrapKV(t *testing.T) {
 	ctx := context.Background()
-	ctx = WithMeta(ctx, "ignored")
+	ctx = fctx.WithMeta(ctx, "ignored")
 
-	err := Wrap(errors.New("a problem"), ctx, "ignored")
-	data := Unwrap(err)
+	err := fctx.Wrap(errors.New("a problem"), ctx, "ignored")
+	data := fctx.Unwrap(err)
 
 	assert.Nil(t, data)
 }
 
 func TestWithMetaEmpty(t *testing.T) {
 	err := errors.New("a problem")
-	data := Unwrap(err)
+	data := fctx.Unwrap(err)
 
 	assert.Nil(t, data)
 }
