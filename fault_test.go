@@ -2,6 +2,7 @@ package fault_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/Southclaws/fault"
@@ -23,9 +24,12 @@ func rootCause(kind int) error {
 		return errSentinelFault
 	} else if kind == 3 {
 		return errors.New("stdlib root cause error")
-	} else {
+	} else if kind == 4 {
 		return fault.New("fault root cause error")
+	} else if kind == 5 {
+		return fmt.Errorf("errorf wrapped: %w", errSentinelStdlib)
 	}
+	return nil
 }
 
 func errorCallerDeep(kind int) error {
@@ -67,15 +71,15 @@ func TestFullCallStack(t *testing.T) {
 
 		e0 := chain.Errors[0]
 		a.Equal("stdlib sentinel error", e0.Message)
-		a.Contains(e0.Location, "fault/fault_test.go:34")
+		a.Contains(e0.Location, "fault/fault_test.go:3")
 
 		e1 := chain.Errors[1]
 		a.Equal("failed to call function", e1.Message)
-		a.Contains(e1.Location, "fault/fault_test.go:43")
+		a.Contains(e1.Location, "fault/fault_test.go:4")
 
 		e2 := chain.Errors[2]
 		a.Equal("", e2.Message)
-		a.Contains(e2.Location, "fault/fault_test.go:52")
+		a.Contains(e2.Location, "fault/fault_test.go:5")
 	})
 
 	t.Run("sentinel_fault", func(t *testing.T) {
@@ -89,15 +93,15 @@ func TestFullCallStack(t *testing.T) {
 
 		e0 := chain.Errors[0]
 		a.Equal("fault sentinel error", e0.Message)
-		a.Contains(e0.Location, "fault/fault_test.go:34")
+		a.Contains(e0.Location, "fault/fault_test.go:3")
 
 		e1 := chain.Errors[1]
 		a.Equal("failed to call function", e1.Message)
-		a.Contains(e1.Location, "fault/fault_test.go:43")
+		a.Contains(e1.Location, "fault/fault_test.go:4")
 
 		e2 := chain.Errors[2]
 		a.Equal("", e2.Message)
-		a.Contains(e2.Location, "fault/fault_test.go:52")
+		a.Contains(e2.Location, "fault/fault_test.go:5")
 	})
 
 	t.Run("inline_stdlib", func(t *testing.T) {
@@ -111,15 +115,15 @@ func TestFullCallStack(t *testing.T) {
 
 		e0 := chain.Errors[0]
 		a.Equal("stdlib root cause error", e0.Message)
-		a.Contains(e0.Location, "fault/fault_test.go:34")
+		a.Contains(e0.Location, "fault/fault_test.go:3")
 
 		e1 := chain.Errors[1]
 		a.Equal("failed to call function", e1.Message)
-		a.Contains(e1.Location, "fault/fault_test.go:43")
+		a.Contains(e1.Location, "fault/fault_test.go:4")
 
 		e2 := chain.Errors[2]
 		a.Equal("", e2.Message)
-		a.Contains(e2.Location, "fault/fault_test.go:52")
+		a.Contains(e2.Location, "fault/fault_test.go:5")
 	})
 
 	t.Run("inline_fault", func(t *testing.T) {
@@ -133,14 +137,36 @@ func TestFullCallStack(t *testing.T) {
 
 		e0 := chain.Errors[0]
 		a.Equal("fault root cause error", e0.Message)
-		a.Contains(e0.Location, "fault/fault_test.go:34")
+		a.Contains(e0.Location, "fault/fault_test.go:3")
 
 		e1 := chain.Errors[1]
 		a.Equal("failed to call function", e1.Message)
-		a.Contains(e1.Location, "fault/fault_test.go:43")
+		a.Contains(e1.Location, "fault/fault_test.go:4")
 
 		e2 := chain.Errors[2]
 		a.Equal("", e2.Message)
-		a.Contains(e2.Location, "fault/fault_test.go:52")
+		a.Contains(e2.Location, "fault/fault_test.go:5")
+	})
+
+	t.Run("errorf_wrapped", func(t *testing.T) {
+		a := assert.New(t)
+		err := errorCaller(5)
+		chain := fault.Flatten(err)
+
+		a.ErrorContains(err, "failed to call function: errorf wrapped: stdlib sentinel error")
+		a.ErrorContains(chain.Root, "stdlib sentinel error")
+		a.Len(chain.Errors, 3)
+
+		e0 := chain.Errors[0]
+		a.Equal("errorf wrapped: stdlib sentinel error", e0.Message)
+		a.Contains(e0.Location, "fault/fault_test.go:3")
+
+		e1 := chain.Errors[1]
+		a.Equal("failed to call function", e1.Message)
+		a.Contains(e1.Location, "fault/fault_test.go:4")
+
+		e2 := chain.Errors[2]
+		a.Equal("", e2.Message)
+		a.Contains(e2.Location, "fault/fault_test.go:5")
 	})
 }
