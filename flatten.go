@@ -49,8 +49,6 @@ func Flatten(err error) *Chain {
 			}
 
 			f.Errors = append([]Step{step}, f.Errors...)
-		default:
-			f.Errors = append([]Step{{Message: unwrapped.Error()}}, f.Errors...)
 		}
 
 		next = errors.Unwrap(err)
