@@ -67,10 +67,10 @@ func (f *container) Format(s fmt.State, verb rune) {
 
 	for _, v := range u.Errors {
 		if v.Message != "" {
-			s.Write([]byte(fmt.Sprintf("%s\n", v.Message)))
+			fmt.Fprintf(s, "%s\n", v.Message)
 		}
 		if v.Location != "" {
-			s.Write([]byte(fmt.Sprintf("\t%s\n", v.Location)))
+			fmt.Fprintf(s, "\t%s\n", v.Location)
 		}
 	}
 }
