@@ -27,8 +27,7 @@ func TestWrapWithKindChanging(t *testing.T) {
 }
 
 func TestWrapNil(t *testing.T) {
-	err := Wrap(nil, NotFound)
-	out := Get(err)
-
-	assert.Equal(t, None, out)
+	assert.Panics(t, func() {
+		Wrap(nil, NotFound)
+	})
 }
