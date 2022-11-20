@@ -6,7 +6,7 @@ import (
 )
 
 func errorCaller(kind int) error {
-	err := errorCallerMid(kind)
+	err := errorCallerFromMiddleOfChain(kind)
 	if err != nil {
 		return fault.Wrap(err)
 	}
@@ -14,8 +14,8 @@ func errorCaller(kind int) error {
 	return nil
 }
 
-func errorCallerMid(kind int) error {
-	err := errorCallerDeep(kind)
+func errorCallerFromMiddleOfChain(kind int) error {
+	err := errorProducerFromRootCause(kind)
 	if err != nil {
 		return fault.Wrap(err, fmsg.With("failed to call function"))
 	}
@@ -23,7 +23,7 @@ func errorCallerMid(kind int) error {
 	return nil
 }
 
-func errorCallerDeep(kind int) error {
+func errorProducerFromRootCause(kind int) error {
 	err := rootCause(kind)
 	if err != nil {
 		return fault.Wrap(err)

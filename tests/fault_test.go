@@ -117,3 +117,25 @@ func TestFlattenStdlibErrorfWrappedError(t *testing.T) {
 	a.Equal("", e2.Message)
 	a.Contains(e2.Location, "test_callers.go:11")
 }
+
+func TestFlattenStdlibErrorfWrappedExternalError(t *testing.T) {
+	a := assert.New(t)
+	err := errorCaller(6)
+	chain := fault.Flatten(err)
+
+	a.ErrorContains(err, "external error wrapped with errorf: stdlib external error")
+	a.ErrorContains(chain.Root, "stdlib external error")
+	a.Len(chain.Errors, 3)
+
+	e0 := chain.Errors[0]
+	a.Equal("errorf wrapped external: external error wrapped with errorf: stdlib external error", e0.Message)
+	a.Contains(e0.Location, "test_callers.go:29")
+
+	e1 := chain.Errors[1]
+	a.Equal("failed to call function", e1.Message)
+	a.Contains(e1.Location, "test_callers.go:20")
+
+	e2 := chain.Errors[2]
+	a.Equal("", e2.Message)
+	a.Contains(e2.Location, "test_callers.go:11")
+}

@@ -28,6 +28,15 @@ func rootCause(kind int) error {
 		return fault.New("fault root cause error")
 	} else if kind == 5 {
 		return fmt.Errorf("errorf wrapped: %w", errSentinelStdlib)
+	} else if kind == 6 {
+		err := externalError()
+		return fmt.Errorf("errorf wrapped external: %w", err)
 	}
 	return nil
+}
+
+var errExternalStdlib = errors.New("stdlib external error")
+
+func externalError() error {
+	return fmt.Errorf("external error wrapped with errorf: %w", errExternalStdlib)
 }
