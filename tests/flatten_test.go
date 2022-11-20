@@ -9,12 +9,14 @@ import (
 
 func TestFlattenStdlibSentinelError(t *testing.T) {
 	a := assert.New(t)
+
 	err := errorCaller(1)
 	chain := fault.Flatten(err)
+	full := err.Error()
+	root := chain.Root.Error()
 
-	a.ErrorContains(err, "stdlib sentinel error")
-	a.ErrorContains(err, "failed to call function")
-	a.ErrorContains(chain.Root, "stdlib sentinel error")
+	a.Equal("failed to call function: stdlib sentinel error", full)
+	a.Equal("stdlib sentinel error", root)
 	a.Len(chain.Errors, 3)
 
 	e0 := chain.Errors[0]
@@ -32,11 +34,14 @@ func TestFlattenStdlibSentinelError(t *testing.T) {
 
 func TestFlattenFaultSentinelError(t *testing.T) {
 	a := assert.New(t)
+
 	err := errorCaller(2)
 	chain := fault.Flatten(err)
+	full := err.Error()
+	root := chain.Root.Error()
 
-	a.ErrorContains(err, "failed to call function: fault sentinel error")
-	a.ErrorContains(chain.Root, "fault sentinel error")
+	a.Equal("failed to call function: fault sentinel error", full)
+	a.Equal("fault sentinel error", root)
 	a.Len(chain.Errors, 3)
 
 	e0 := chain.Errors[0]
@@ -54,11 +59,14 @@ func TestFlattenFaultSentinelError(t *testing.T) {
 
 func TestFlattenStdlibInlineError(t *testing.T) {
 	a := assert.New(t)
+
 	err := errorCaller(3)
 	chain := fault.Flatten(err)
+	full := err.Error()
+	root := chain.Root.Error()
 
-	a.ErrorContains(err, "failed to call function: stdlib root cause error")
-	a.ErrorContains(chain.Root, "stdlib root cause error")
+	a.Equal("failed to call function: stdlib root cause error", full)
+	a.Equal("stdlib root cause error", root)
 	a.Len(chain.Errors, 3)
 
 	e0 := chain.Errors[0]
@@ -76,11 +84,14 @@ func TestFlattenStdlibInlineError(t *testing.T) {
 
 func TestFlattenFaultInlineError(t *testing.T) {
 	a := assert.New(t)
+
 	err := errorCaller(4)
 	chain := fault.Flatten(err)
+	full := err.Error()
+	root := chain.Root.Error()
 
-	a.ErrorContains(err, "failed to call function: fault root cause error")
-	a.ErrorContains(chain.Root, "fault root cause error")
+	a.Equal("failed to call function: fault root cause error", full)
+	a.Equal("fault root cause error", root)
 	a.Len(chain.Errors, 3)
 
 	e0 := chain.Errors[0]
@@ -98,11 +109,14 @@ func TestFlattenFaultInlineError(t *testing.T) {
 
 func TestFlattenStdlibErrorfWrappedError(t *testing.T) {
 	a := assert.New(t)
+
 	err := errorCaller(5)
 	chain := fault.Flatten(err)
+	full := err.Error()
+	root := chain.Root.Error()
 
-	a.ErrorContains(err, "failed to call function: errorf wrapped: stdlib sentinel error")
-	a.ErrorContains(chain.Root, "stdlib sentinel error")
+	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error", full)
+	a.Equal("stdlib sentinel error", root)
 	a.Len(chain.Errors, 3)
 
 	e0 := chain.Errors[0]
@@ -120,13 +134,15 @@ func TestFlattenStdlibErrorfWrappedError(t *testing.T) {
 
 func TestFlattenStdlibErrorfWrappedExternalError(t *testing.T) {
 	a := assert.New(t)
+
 	err := errorCaller(6)
 	chain := fault.Flatten(err)
-	str := err.Error()
+	full := err.Error()
+	root := chain.Root.Error()
 
-	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error", str)
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error", full)
 	a.ErrorContains(err, "external error wrapped with errorf: stdlib external error")
-	a.ErrorContains(chain.Root, "stdlib external error")
+	a.Equal("stdlib external error", root)
 	a.Len(chain.Errors, 3)
 
 	e0 := chain.Errors[0]
