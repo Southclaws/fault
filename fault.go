@@ -65,15 +65,25 @@ func (f *container) Error() string {
 func (f *container) Unwrap() error { return f.cause }
 
 func (f *container) Format(s fmt.State, verb rune) {
-	u := Flatten(f)
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			u := Flatten(f)
+			for _, v := range u.Errors {
+				if v.Message != "" {
+					fmt.Fprintf(s, "%s\n", v.Message)
+				}
+				if v.Location != "" {
+					fmt.Fprintf(s, "\t%s\n", v.Location)
+				}
+			}
+			return
+		}
 
-	for _, v := range u.Errors {
-		if v.Message != "" {
-			fmt.Fprintf(s, "%s\n", v.Message)
-		}
-		if v.Location != "" {
-			fmt.Fprintf(s, "\t%s\n", v.Location)
-		}
+		fallthrough
+
+	case 's':
+		fmt.Fprint(s, f.Error())
 	}
 }
 
