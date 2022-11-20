@@ -34,7 +34,7 @@ if err != nil {
 }
 ```
 
-What this gives you is basic stack traces. The philosophy behind stack traces provided by Fault is that you only care about relevant code locations. You do not need `runtime/proc.go` in your stack traces unless you're actually working on the Go compiler or some crazy low level tooling. A fault stack trace looks like this:
+What this gives you is basic stack traces. The philosophy behind stack traces provided by Fault is that you only care about relevant code locations. You do not need `runtime/proc.go` in your stack traces unless you're actually working on the Go compiler or some crazy low level tooling. A fault stack trace looks like this when formatted with `%+v`:
 
 ```
 stdlib sentinel error
@@ -44,7 +44,7 @@ failed to call function
     /Users/southclaws/Work/fault/fault_test.go:52
 ```
 
-And of course all of this information is accessible in a structured way so you can serialise it how you want for your logging stack of choice.
+And of course all of this information is accessible in a structured way so you can serialise it how you want for your logging stack of choice. Fault aims to be unopinionated about presentation.
 
 But what if you want to add context? With pkg/errors and similar libraries, you often use `errors.Wrap(err, "failed to do something")` to add a bit of context to a wrapped error.
 
