@@ -1,10 +1,11 @@
-go 1.19
+go 1.18
 
 // Q: Why is this file here?
-// 
+//
 // A: The tests aren't just a separate package, but a separate module. This will
 // keep test-specific dependencies out of the dependency chain and also makes it
 // so `go test ./...` from the root works. This usage isn't well defined though.
 
 use .
+
 use ./tests
