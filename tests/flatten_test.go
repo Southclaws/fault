@@ -122,7 +122,9 @@ func TestFlattenStdlibErrorfWrappedExternalError(t *testing.T) {
 	a := assert.New(t)
 	err := errorCaller(6)
 	chain := fault.Flatten(err)
+	str := err.Error()
 
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error", str)
 	a.ErrorContains(err, "external error wrapped with errorf: stdlib external error")
 	a.ErrorContains(chain.Root, "stdlib external error")
 	a.Len(chain.Errors, 3)

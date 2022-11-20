@@ -6,7 +6,6 @@
 package fault
 
 import (
-	"errors"
 	"fmt"
 	"runtime"
 	"strings"
@@ -50,13 +49,16 @@ type container struct {
 // internal technical information about your application stack.
 func (f *container) Error() string {
 	errs := []string{}
-	err := f.cause
-	for err != nil {
-		if _, is := err.(*container); !is {
-			errs = append(errs, err.Error())
+	chain := Flatten(f)
+
+	// reverse iterate since the chain is in caller order
+	for i := len(chain.Errors) - 1; i >= 0; i-- {
+		message := chain.Errors[i].Message
+		if message != "" {
+			errs = append(errs, chain.Errors[i].Message)
 		}
-		err = errors.Unwrap(err)
 	}
+
 	return strings.Join(errs, ": ")
 }
 
