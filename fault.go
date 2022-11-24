@@ -67,6 +67,8 @@ func (f *container) Unwrap() error { return f.cause }
 func (f *container) Format(s fmt.State, verb rune) {
 	u := Flatten(f)
 
+	fmt.Fprintf(s, "%s\n", u.Root.Error())
+
 	for _, v := range u.Errors {
 		if v.Message != "" {
 			fmt.Fprintf(s, "%s\n", v.Message)
