@@ -66,7 +66,9 @@ func GetIssues(err error) []Issue {
 
 	for err != nil {
 		if wm, ok := err.(*withMessage); ok {
-			p = append(p, wm.external)
+			if wm.external != "" {
+				p = append(p, wm.external)
+			}
 		}
 
 		err = errors.Unwrap(err)
