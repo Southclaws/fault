@@ -9,7 +9,7 @@ import (
 // to `errors.Unwrap` it further) as well as a slice of "Step" objects which are
 // points where the error was wrapped.
 type Chain struct {
-	Root   error
+	Root   error // TODO: deprecate
 	Errors []Step
 }
 
@@ -30,9 +30,22 @@ func Flatten(err error) *Chain {
 		return nil
 	}
 
-	var f Chain
+	// first, flatten the call tree into an array so it's easier to work with.
+	flat := []error{}
 	for err != nil {
+		flat = append(flat, err)
+		err = errors.Unwrap(err)
+	}
+
+	var f Chain
+	for i := 0; i < len(flat); i++ {
+		err := flat[i]
+
+		// lookahead if possible
 		var next error
+		if i+1 < len(flat) {
+			next = flat[i+1]
+		}
 
 		switch unwrapped := err.(type) {
 		case *container:
@@ -43,7 +56,6 @@ func Flatten(err error) *Chain {
 			// exist to contain other errors that actually contain information,
 			// peek the next error in the chain in order to get its message and
 			// add it to the current step before appending it to the chain.
-			next = errors.Unwrap(err)
 			if _, ok := next.(*container); !ok {
 				step.Message = next.Error()
 			}
@@ -51,15 +63,11 @@ func Flatten(err error) *Chain {
 			f.Errors = append([]Step{step}, f.Errors...)
 		}
 
-		next = errors.Unwrap(err)
-
 		// If the next error in the chain is nil, that means `err` is the last
 		// error in the chain. This error is the root or "external" error.
 		if next == nil {
 			f.Root = err
 		}
-
-		err = next
 	}
 
 	return &f
