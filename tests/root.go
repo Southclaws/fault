@@ -31,12 +31,12 @@ func rootCause(kind int) error {
 	} else if kind == 6 {
 		err := externalError()
 		return fmt.Errorf("errorf wrapped external: %w", err)
+	} else if kind == 7 {
+		err := externalWrappedError()
+		return fmt.Errorf("errorf wrapped external: %w", err)
+	} else if kind == 8 {
+		err := externalWrappedError()
+		return err
 	}
 	return nil
-}
-
-var errExternalStdlib = errors.New("stdlib external error")
-
-func externalError() error {
-	return fmt.Errorf("external error wrapped with errorf: %w", errExternalStdlib)
 }
