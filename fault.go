@@ -30,17 +30,12 @@ func Wrap(err error, w ...Wrapper) error {
 		location: getLocation(),
 	}
 
-	if _, ok := err.(*container); !ok {
-		c.end = true
-	}
-
 	return c
 }
 
 type container struct {
 	cause    error
 	location string
-	end      bool // is this the last one in the chain before an external error?
 }
 
 // Error behaves like most error wrapping libraries, it gives you all the error
