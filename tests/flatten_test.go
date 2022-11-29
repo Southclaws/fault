@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Southclaws/fault"
+	"github.com/Southclaws/fault/fmsg"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -181,4 +182,24 @@ func TestFlattenStdlibErrorfWrappedExternallyWrappedError(t *testing.T) {
 	e2 := chain.Errors[2]
 	a.Equal("", e2.Message)
 	a.Contains(e2.Location, "test_callers.go:11")
+}
+
+func TestFlattenStdlibErrorfWrappedExternallyWrappedErrorBrokenChain(t *testing.T) {
+	a := assert.New(t)
+
+	original := externalWrappedPostgresError()
+	err := fault.Wrap(original, fmsg.With("failed to query"))
+	chain := fault.Flatten(err)
+	full := err.Error()
+	root := chain.Root.Error()
+
+	a.Equal("failed to query: external pg error: fatal: your sql was wrong bro (SQLSTATE 123)", full)
+	a.Equal("fatal: your sql was wrong bro (SQLSTATE 123)", root)
+	a.Len(chain.Errors, 2)
+
+	e0 := chain.Errors[0]
+	a.Equal("external pg error: fatal: your sql was wrong bro (SQLSTATE 123)", e0.Message)
+
+	e1 := chain.Errors[1]
+	a.Equal("failed to query", e1.Message)
 }
