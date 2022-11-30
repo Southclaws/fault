@@ -23,7 +23,7 @@ type withMessage struct {
 // punctuation and grammar and end the message with a period.
 func Wrap(err error, internal, external string) error {
 	if err == nil {
-		panic("nil error passed to Wrap")
+		return nil
 	}
 
 	return &withMessage{

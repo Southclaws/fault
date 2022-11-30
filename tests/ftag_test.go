@@ -26,9 +26,3 @@ func TestWrapWithKindChanging(t *testing.T) {
 
 	assert.Equal(t, ftag.NotFound, out, "Should always pick the most recent kind from an error chain.")
 }
-
-func TestWrapNil(t *testing.T) {
-	assert.Panics(t, func() {
-		ftag.Wrap(nil, ftag.NotFound)
-	})
-}
