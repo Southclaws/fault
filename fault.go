@@ -47,10 +47,10 @@ func (f *container) Error() string {
 	chain := Flatten(f)
 
 	// reverse iterate since the chain is in caller order
-	for i := len(chain.Errors) - 1; i >= 0; i-- {
-		message := chain.Errors[i].Message
+	for i := len(chain) - 1; i >= 0; i-- {
+		message := chain[i].Message
 		if message != "" {
-			errs = append(errs, chain.Errors[i].Message)
+			errs = append(errs, chain[i].Message)
 		}
 	}
 
@@ -64,7 +64,7 @@ func (f *container) Format(s fmt.State, verb rune) {
 	case 'v':
 		if s.Flag('+') {
 			u := Flatten(f)
-			for _, v := range u.Errors {
+			for _, v := range u {
 				if v.Message != "" {
 					fmt.Fprintf(s, "%s\n", v.Message)
 				}
