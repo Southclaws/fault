@@ -91,7 +91,7 @@ func TestFlattenStdlibErrorfWrappedError(t *testing.T) {
 	chain := fault.Flatten(err)
 	full := err.Error()
 
-	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error: stdlib sentinel error", full)
+	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error", full)
 	a.Len(chain, 3)
 
 	e0 := chain[0]
@@ -99,7 +99,7 @@ func TestFlattenStdlibErrorfWrappedError(t *testing.T) {
 	a.Empty(e0.Location)
 
 	e1 := chain[1]
-	a.Equal("errorf wrapped: stdlib sentinel error", e1.Message)
+	a.Equal("errorf wrapped", e1.Message)
 	a.Contains(e1.Location, "test_callers.go:29")
 
 	e2 := chain[2]
@@ -114,9 +114,7 @@ func TestFlattenStdlibErrorfWrappedExternalError(t *testing.T) {
 	chain := fault.Flatten(err)
 	full := err.Error()
 
-	// NOTE: the way that other libraries handle wrapped errors isn't great, the
-	// message is often just a join of nested strings so it's not easy to split.
-	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error: external error wrapped with errorf: stdlib external error: stdlib external error", full)
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error", full)
 	a.Len(chain, 4)
 
 	e0 := chain[0]
@@ -124,11 +122,11 @@ func TestFlattenStdlibErrorfWrappedExternalError(t *testing.T) {
 	a.Empty(e0.Location)
 
 	e1 := chain[1]
-	a.Equal("external error wrapped with errorf: stdlib external error", e1.Message)
+	a.Equal("external error wrapped with errorf", e1.Message)
 	a.Empty(e1.Location)
 
 	e2 := chain[2]
-	a.Equal("errorf wrapped external: external error wrapped with errorf: stdlib external error", e2.Message)
+	a.Equal("errorf wrapped external", e2.Message)
 	a.Contains(e2.Location, "test_callers.go:29")
 
 	e3 := chain[3]
@@ -151,7 +149,7 @@ func TestFlattenStdlibErrorfWrappedExternallyWrappedError(t *testing.T) {
 	a.Empty(e0.Location)
 
 	e1 := chain[1]
-	a.Equal("external error wrapped with pkg/errors: github.com/pkg/errors external error", e1.Message)
+	a.Equal("external error wrapped with pkg/errors", e1.Message)
 	a.Empty(e1.Location)
 }
 
@@ -163,14 +161,14 @@ func TestFlattenStdlibErrorfWrappedExternallyWrappedErrorBrokenChain(t *testing.
 	chain := fault.Flatten(err)
 	full := err.Error()
 
-	a.Equal("failed to query: external pg error: fatal: your sql was wrong bro (SQLSTATE 123): fatal: your sql was wrong bro (SQLSTATE 123)", full)
+	a.Equal("failed to query: external pg error: fatal: your sql was wrong bro (SQLSTATE 123)", full)
 	a.Len(chain, 3)
 
 	e0 := chain[0]
 	a.Equal("fatal: your sql was wrong bro (SQLSTATE 123)", e0.Message)
 
 	e1 := chain[1]
-	a.Equal("external pg error: fatal: your sql was wrong bro (SQLSTATE 123)", e1.Message)
+	a.Equal("external pg error", e1.Message)
 
 	e2 := chain[2]
 	a.Equal("failed to query", e2.Message)
