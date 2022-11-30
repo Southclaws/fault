@@ -2,6 +2,7 @@ package fault
 
 import (
 	"errors"
+	"strings"
 )
 
 // Chain represents an unwound error chain. Each step is a useful error. Errors
@@ -33,11 +34,15 @@ func Flatten(err error) Chain {
 	}
 
 	lastLocation := ""
-	lastMessage := ""
 
 	var f Chain
 	for i := 0; i < len(flat); i++ {
 		err := flat[i]
+
+		var next error
+		if i+1 < len(flat) {
+			next = flat[i+1]
+		}
 
 		switch unwrapped := err.(type) {
 		// NOTE: Because fault containers do not have messages, they only
@@ -50,8 +55,15 @@ func Flatten(err error) Chain {
 			message := err.Error()
 
 			// de-duplicate nested error messages
-			// TODO: improve this by destructuring/splitting nested duplicates.
-			if lastMessage == message {
+			if next != nil {
+				if idx := strings.Index(message, next.Error()); idx != -1 {
+					// cut off the duplicate message and remove the separator.
+					message = strings.Trim(message[:idx], ": ")
+				}
+			}
+
+			// the entire error message was a duplicate, skip.
+			if message == "" {
 				continue
 			}
 
@@ -61,7 +73,6 @@ func Flatten(err error) Chain {
 			}}, f...)
 
 			lastLocation = ""
-			lastMessage = message
 		}
 	}
 
