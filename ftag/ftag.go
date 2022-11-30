@@ -20,7 +20,7 @@ func (e *withKind) String() string { return e.Error() }
 // Wrap wraps an error and gives it a distinct tag.
 func Wrap(parent error, k Kind) error {
 	if parent == nil {
-		panic("nil error passed to Wrap")
+		return nil
 	}
 
 	if k == "" {

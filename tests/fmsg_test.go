@@ -2,7 +2,6 @@ package tests
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/Southclaws/fault/fmsg"
@@ -44,11 +43,4 @@ func TestWithManySlice(t *testing.T) {
 
 	assert.Len(t, out, 3)
 	assert.Equal(t, []string{"Your reply draft has been saved however we could not publish it.", "Unable to reply to post.", "The post was not found."}, out)
-}
-
-func TestNil(t *testing.T) {
-	assert.Panics(t, func() {
-		err := fmsg.Wrap(nil, "oh no", ":(")
-		fmt.Println(err)
-	})
 }

@@ -18,7 +18,7 @@ type Wrapper func(err error) error
 // Wrap wraps an error with all of the wrappers provided.
 func Wrap(err error, w ...Wrapper) error {
 	if err == nil {
-		panic("nil error passed to Wrap")
+		return nil
 	}
 
 	for _, fn := range w {

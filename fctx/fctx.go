@@ -90,7 +90,7 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 //	}
 func Wrap(err error, ctx context.Context, kv ...string) error {
 	if err == nil {
-		panic("nil error passed to Wrap")
+		return nil
 	}
 
 	meta, ok := ctx.Value(contextKey{}).(map[string]string)
