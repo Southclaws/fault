@@ -37,6 +37,9 @@ func Flatten(err error) *Chain {
 		err = errors.Unwrap(err)
 	}
 
+	lastLocation := ""
+	lastMessage := ""
+
 	var f Chain
 	for i := 0; i < len(flat); i++ {
 		err := flat[i]
@@ -48,19 +51,28 @@ func Flatten(err error) *Chain {
 		}
 
 		switch unwrapped := err.(type) {
+		// NOTE: Because fault containers do not have messages, they only
+		// exist to contain other errors that actually contain information,
+		// store the container's recorded location for usage with the next item.
 		case *container:
-			step := Step{}
-			step.Location = unwrapped.location
+			lastLocation = unwrapped.location
 
-			// NOTE: Because fault containers do not have messages, they only
-			// exist to contain other errors that actually contain information,
-			// peek the next error in the chain in order to get its message and
-			// add it to the current step before appending it to the chain.
-			if _, ok := next.(*container); !ok {
-				step.Message = next.Error()
+		default:
+			message := err.Error()
+
+			// de-duplicate nested error messages
+			// TODO: improve this by destructuring/splitting nested duplicates.
+			if lastMessage == message {
+				continue
 			}
 
-			f.Errors = append([]Step{step}, f.Errors...)
+			f.Errors = append([]Step{{
+				Location: lastLocation,
+				Message:  message,
+			}}, f.Errors...)
+
+			lastLocation = ""
+			lastMessage = message
 		}
 
 		// If the next error in the chain is nil, that means `err` is the last

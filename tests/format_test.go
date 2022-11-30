@@ -19,7 +19,6 @@ func TestFormatStdlibSentinelError(t *testing.T) {
 \s+.+fault/tests/test_callers.go:29
 failed to call function
 \s+.+fault/tests/test_callers.go:20
-\s+.+fault/tests/test_callers.go:11
 `, fmt.Sprintf("%+v", err))
 }
 
@@ -35,7 +34,6 @@ func TestFormatFaultSentinelError(t *testing.T) {
 \s+.+fault/tests/test_callers.go:29
 failed to call function
 \s+.+fault/tests/test_callers.go:20
-\s+.+fault/tests/test_callers.go:11
 `, fmt.Sprintf("%+v", err))
 }
 
@@ -51,7 +49,6 @@ func TestFormatStdlibInlineError(t *testing.T) {
 \s+.+fault/tests/test_callers.go:29
 failed to call function
 \s+.+fault/tests/test_callers.go:20
-\s+.+fault/tests/test_callers.go:11
 `, fmt.Sprintf("%+v", err))
 }
 
@@ -67,7 +64,6 @@ func TestFormatFaultInlineError(t *testing.T) {
 \s+.+fault/tests/test_callers.go:29
 failed to call function
 \s+.+fault/tests/test_callers.go:20
-\s+.+fault/tests/test_callers.go:11
 `, fmt.Sprintf("%+v", err))
 }
 
@@ -76,14 +72,13 @@ func TestFormatStdlibErrorfWrappedError(t *testing.T) {
 
 	err := errorCaller(5)
 
-	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error", fmt.Sprintf("%s", err.Error()))
-	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error", fmt.Sprintf("%s", err))
-	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error", fmt.Sprintf("%v", err))
+	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error: stdlib sentinel error", fmt.Sprintf("%s", err.Error()))
+	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error: stdlib sentinel error", fmt.Sprintf("%s", err))
+	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error: stdlib sentinel error", fmt.Sprintf("%v", err))
 	a.Regexp(`stdlib sentinel error
 \s+.+fault/tests/test_callers.go:29
 failed to call function
 \s+.+fault/tests/test_callers.go:20
-\s+.+fault/tests/test_callers.go:11
 `, fmt.Sprintf("%+v", err))
 }
 
@@ -92,14 +87,13 @@ func TestFormatStdlibErrorfWrappedExternalError(t *testing.T) {
 
 	err := errorCaller(6)
 
-	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error", fmt.Sprintf("%s", err.Error()))
-	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error", fmt.Sprintf("%s", err))
-	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error", fmt.Sprintf("%v", err))
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error: external error wrapped with errorf: stdlib external error: stdlib external error", fmt.Sprintf("%s", err.Error()))
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error: external error wrapped with errorf: stdlib external error: stdlib external error", fmt.Sprintf("%s", err))
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error: external error wrapped with errorf: stdlib external error: stdlib external error", fmt.Sprintf("%v", err))
 	a.Regexp(`errorf wrapped external: external error wrapped with errorf: stdlib external error
 \s+.+fault/tests/test_callers.go:29
 failed to call function
 \s+.+fault/tests/test_callers.go:20
-\s+.+fault/tests/test_callers.go:11
 `, fmt.Sprintf("%+v", err))
 }
 
@@ -108,14 +102,13 @@ func TestFormatStdlibErrorfWrappedExternallyWrappedError(t *testing.T) {
 
 	err := errorCaller(7)
 
-	a.Equal("failed to call function: errorf wrapped external: external error wrapped with pkg/errors: github.com/pkg/errors external error", fmt.Sprintf("%s", err.Error()))
-	a.Equal("failed to call function: errorf wrapped external: external error wrapped with pkg/errors: github.com/pkg/errors external error", fmt.Sprintf("%s", err))
-	a.Equal("failed to call function: errorf wrapped external: external error wrapped with pkg/errors: github.com/pkg/errors external error", fmt.Sprintf("%v", err))
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with pkg/errors: github.com/pkg/errors external error: external error wrapped with pkg/errors: github.com/pkg/errors external error: github.com/pkg/errors external error", fmt.Sprintf("%s", err.Error()))
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with pkg/errors: github.com/pkg/errors external error: external error wrapped with pkg/errors: github.com/pkg/errors external error: github.com/pkg/errors external error", fmt.Sprintf("%s", err))
+	a.Equal("failed to call function: errorf wrapped external: external error wrapped with pkg/errors: github.com/pkg/errors external error: external error wrapped with pkg/errors: github.com/pkg/errors external error: github.com/pkg/errors external error", fmt.Sprintf("%v", err))
 	a.Regexp(`errorf wrapped external: external error wrapped with pkg/errors: github.com/pkg/errors external error
 \s+.+fault/tests/test_callers.go:29
 failed to call function
 \s+.+fault/tests/test_callers.go:20
-\s+.+fault/tests/test_callers.go:11
 `, fmt.Sprintf("%+v", err))
 }
 
@@ -124,9 +117,9 @@ func TestFormatStdlibErrorfWrappedExternallyWrappedErrorBLank(t *testing.T) {
 
 	err := errorProducerFromRootCause(8)
 
-	a.Equal("external error wrapped with pkg/errors: github.com/pkg/errors external error", fmt.Sprintf("%s", err.Error()))
-	a.Equal("external error wrapped with pkg/errors: github.com/pkg/errors external error", fmt.Sprintf("%s", err))
-	a.Equal("external error wrapped with pkg/errors: github.com/pkg/errors external error", fmt.Sprintf("%v", err))
+	a.Equal("external error wrapped with pkg/errors: github.com/pkg/errors external error: github.com/pkg/errors external error", fmt.Sprintf("%s", err.Error()))
+	a.Equal("external error wrapped with pkg/errors: github.com/pkg/errors external error: github.com/pkg/errors external error", fmt.Sprintf("%s", err))
+	a.Equal("external error wrapped with pkg/errors: github.com/pkg/errors external error: github.com/pkg/errors external error", fmt.Sprintf("%v", err))
 
 	a.Regexp(
 		`external error wrapped with pkg/errors: github.com/pkg/errors external error
