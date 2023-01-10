@@ -1,9 +1,13 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"github.com/Southclaws/fault"
+	"github.com/Southclaws/fault/fctx"
+	"github.com/Southclaws/fault/ftag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -117,7 +121,7 @@ failed to call function
 `, fmt.Sprintf("%+v", err))
 }
 
-func TestFormatStdlibErrorfWrappedExternallyWrappedErrorBLank(t *testing.T) {
+func TestFormatStdlibErrorfWrappedExternallyWrappedErrorBlank(t *testing.T) {
 	a := assert.New(t)
 
 	err := errorProducerFromRootCause(8)
@@ -130,5 +134,26 @@ func TestFormatStdlibErrorfWrappedExternallyWrappedErrorBLank(t *testing.T) {
 		`github.com/pkg/errors external error
 external error wrapped with pkg/errors
 \s+.+fault/tests/test_callers.go:29
+`, fmt.Sprintf("%+v", err))
+}
+
+func TestFormatStdlibSentinelErrorWrappedWithoutMessage(t *testing.T) {
+	a := assert.New(t)
+	ctx := context.Background()
+
+	err := errorCaller(1)
+	err = fault.Wrap(err, fctx.With(ctx))
+	err = fault.Wrap(err, ftag.With(ftag.Internal))
+
+	a.NotContains(err.Error(), "<fctx>", "filtered out by .Error()")
+	a.NotContains(err.Error(), "<ftag>", "filtered out by .Error()")
+
+	a.Equal("failed to call function: stdlib sentinel error", fmt.Sprintf("%s", err.Error()))
+	a.Equal("failed to call function: stdlib sentinel error", fmt.Sprintf("%s", err))
+	a.Equal("failed to call function: stdlib sentinel error", fmt.Sprintf("%v", err))
+	a.Regexp(`stdlib sentinel error
+\s+.+fault/tests/test_callers.go:29
+failed to call function
+\s+.+fault/tests/test_callers.go:20
 `, fmt.Sprintf("%+v", err))
 }

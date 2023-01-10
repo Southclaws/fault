@@ -49,12 +49,17 @@ func (f *container) Error() string {
 	// reverse iterate since the chain is in caller order
 	for i := len(chain) - 1; i >= 0; i-- {
 		message := chain[i].Message
-		if message != "" {
+		if message != "" && !isInternalString(message) {
 			errs = append(errs, chain[i].Message)
 		}
 	}
 
-	return strings.Join(errs, ": ")
+	message := strings.Join(errs, ": ")
+	if message == "" {
+		message = "(no error message provided)"
+	}
+
+	return message
 }
 
 func (f *container) Unwrap() error { return f.cause }
@@ -85,4 +90,9 @@ func (f *container) Format(s fmt.State, verb rune) {
 func getLocation() string {
 	_, file, line, _ := runtime.Caller(2)
 	return fmt.Sprintf("%s:%d", file, line)
+}
+
+// isInternalString returns true for messages like <fctx> which are placeholders
+func isInternalString(s string) bool {
+	return strings.HasPrefix(s, "<") && strings.HasSuffix(s, ">")
 }
