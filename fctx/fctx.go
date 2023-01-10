@@ -44,13 +44,14 @@ func (e *withContext) String() string { return e.Error() }
 //		"post_id", postID,
 //	)
 func WithMeta(ctx context.Context, kv ...string) context.Context {
-	var data map[string]string
+	data := make(map[string]string)
 
 	// overwrite any existing context metadata
-	if meta, ok := ctx.Value(contextKey{}).(map[string]string); ok {
-		data = meta
-	} else {
-		data = make(map[string]string)
+	if parent, ok := ctx.Value(contextKey{}).(map[string]string); ok {
+		// make a copy to avoid mutating parent context data via map reference.
+		for k, v := range parent {
+			data[k] = v
+		}
 	}
 
 	l := len(kv)
@@ -93,9 +94,16 @@ func Wrap(err error, ctx context.Context, kv ...string) error {
 		return nil
 	}
 
-	meta, ok := ctx.Value(contextKey{}).(map[string]string)
+	meta := make(map[string]string)
+
+	parent, ok := ctx.Value(contextKey{}).(map[string]string)
 	if !ok {
 		return err
+	}
+
+	// make a copy to avoid mutating parent error data via map reference.
+	for k, v := range parent {
+		meta[k] = v
 	}
 
 	l := len(kv)
