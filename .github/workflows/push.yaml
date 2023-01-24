@@ -16,4 +16,8 @@ jobs:
           cache: true
 
       - name: Test
-        run: go test -v ./tests
+        run: go test -covermode=atomic -coverprofile=coverage.out -v ./tests
+
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.out
