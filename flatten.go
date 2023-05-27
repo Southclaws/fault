@@ -51,6 +51,14 @@ func Flatten(err error) Chain {
 		case *container:
 			lastLocation = unwrapped.location
 
+		case *fundamental:
+			f = append([]Step{{
+				Location: unwrapped.location,
+				Message:  err.Error(),
+			}}, f...)
+
+			lastLocation = ""
+
 		default:
 			message := err.Error()
 

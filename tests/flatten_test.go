@@ -39,7 +39,7 @@ func TestFlattenFaultSentinelError(t *testing.T) {
 
 	e0 := chain[0]
 	a.Equal("fault sentinel error", e0.Message)
-	a.Contains(e0.Location, "test_callers.go:29")
+	a.Contains(e0.Location, "root.go:15")
 
 	e1 := chain[1]
 	a.Equal("failed to call function", e1.Message)
@@ -77,7 +77,7 @@ func TestFlattenFaultInlineError(t *testing.T) {
 
 	e0 := chain[0]
 	a.Equal("fault root cause error", e0.Message)
-	a.Contains(e0.Location, "test_callers.go:29")
+	a.Contains(e0.Location, "root.go:28")
 
 	e1 := chain[1]
 	a.Equal("failed to call function", e1.Message)

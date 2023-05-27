@@ -35,7 +35,7 @@ func TestFormatFaultSentinelError(t *testing.T) {
 	a.Equal("failed to call function: fault sentinel error", fmt.Sprintf("%s", err))
 	a.Equal("failed to call function: fault sentinel error", fmt.Sprintf("%v", err))
 	a.Regexp(`fault sentinel error
-\s+.+fault/tests/test_callers.go:29
+\s+.+fault/tests/root.go:15
 failed to call function
 \s+.+fault/tests/test_callers.go:20
 `, fmt.Sprintf("%+v", err))
@@ -65,7 +65,7 @@ func TestFormatFaultInlineError(t *testing.T) {
 	a.Equal("failed to call function: fault root cause error", fmt.Sprintf("%s", err))
 	a.Equal("failed to call function: fault root cause error", fmt.Sprintf("%v", err))
 	a.Regexp(`fault root cause error
-\s+.+fault/tests/test_callers.go:29
+\s+.+fault/tests/root.go:28
 failed to call function
 \s+.+fault/tests/test_callers.go:20
 `, fmt.Sprintf("%+v", err))
