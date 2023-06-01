@@ -21,6 +21,17 @@ func Wrap(err error, w ...Wrapper) error {
 		return nil
 	}
 
+	// the passed err might already have a location if it's a fault.New error, or it might not if it's another type of
+	// error like one from the standard library. Wrapping it in a container with an empty location ensures that the
+	// location will be reset when we flatten the error chain. If the error is a fault.New error, it will itself be
+	// wrapped in a container which will have a location
+	if _, ok := err.(*container); !ok {
+		err = &container{
+			cause:    err,
+			location: "",
+		}
+	}
+
 	for _, fn := range w {
 		err = fn(err)
 	}

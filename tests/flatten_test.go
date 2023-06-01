@@ -16,15 +16,23 @@ func TestFlattenStdlibSentinelError(t *testing.T) {
 	full := err.Error()
 
 	a.Equal("failed to call function: stdlib sentinel error", full)
-	a.Len(chain, 2)
+	a.Len(chain, 4)
 
 	e0 := chain[0]
 	a.Equal("stdlib sentinel error", e0.Message)
-	a.Contains(e0.Location, "test_callers.go:29")
+	a.Empty(e0.Location)
 
 	e1 := chain[1]
-	a.Equal("failed to call function", e1.Message)
-	a.Contains(e1.Location, "test_callers.go:20")
+	a.Empty(e1.Message)
+	a.Contains(e1.Location, "test_callers.go:29")
+
+	e2 := chain[2]
+	a.Equal("failed to call function", e2.Message)
+	a.Contains(e2.Location, "test_callers.go:20")
+
+	e3 := chain[3]
+	a.Empty(e3.Message)
+	a.Contains(e3.Location, "test_callers.go:11")
 }
 
 func TestFlattenFaultSentinelError(t *testing.T) {
@@ -35,15 +43,23 @@ func TestFlattenFaultSentinelError(t *testing.T) {
 	full := err.Error()
 
 	a.Equal("failed to call function: fault sentinel error", full)
-	a.Len(chain, 2)
+	a.Len(chain, 4)
 
 	e0 := chain[0]
 	a.Equal("fault sentinel error", e0.Message)
 	a.Contains(e0.Location, "root.go:15")
 
 	e1 := chain[1]
-	a.Equal("failed to call function", e1.Message)
-	a.Contains(e1.Location, "test_callers.go:20")
+	a.Empty(e1.Message)
+	a.Contains(e1.Location, "test_callers.go:29")
+
+	e2 := chain[2]
+	a.Equal("failed to call function", e2.Message)
+	a.Contains(e2.Location, "test_callers.go:20")
+
+	e3 := chain[3]
+	a.Empty(e3.Message)
+	a.Contains(e3.Location, "test_callers.go:11")
 }
 
 func TestFlattenStdlibInlineError(t *testing.T) {
@@ -54,15 +70,23 @@ func TestFlattenStdlibInlineError(t *testing.T) {
 	full := err.Error()
 
 	a.Equal("failed to call function: stdlib root cause error", full)
-	a.Len(chain, 2)
+	a.Len(chain, 4)
 
 	e0 := chain[0]
 	a.Equal("stdlib root cause error", e0.Message)
-	a.Contains(e0.Location, "test_callers.go:29")
+	a.Empty(e0.Location)
 
 	e1 := chain[1]
-	a.Equal("failed to call function", e1.Message)
-	a.Contains(e1.Location, "test_callers.go:20")
+	a.Empty(e1.Message)
+	a.Contains(e1.Location, "test_callers.go:29")
+
+	e2 := chain[2]
+	a.Equal("failed to call function", e2.Message)
+	a.Contains(e2.Location, "test_callers.go:20")
+
+	e3 := chain[3]
+	a.Empty(e3.Message)
+	a.Contains(e3.Location, "test_callers.go:11")
 }
 
 func TestFlattenFaultInlineError(t *testing.T) {
@@ -73,15 +97,23 @@ func TestFlattenFaultInlineError(t *testing.T) {
 	full := err.Error()
 
 	a.Equal("failed to call function: fault root cause error", full)
-	a.Len(chain, 2)
+	a.Len(chain, 4)
 
 	e0 := chain[0]
 	a.Equal("fault root cause error", e0.Message)
 	a.Contains(e0.Location, "root.go:28")
 
 	e1 := chain[1]
-	a.Equal("failed to call function", e1.Message)
-	a.Contains(e1.Location, "test_callers.go:20")
+	a.Empty(e1.Message)
+	a.Contains(e1.Location, "test_callers.go:29")
+
+	e2 := chain[2]
+	a.Equal("failed to call function", e2.Message)
+	a.Contains(e2.Location, "test_callers.go:20")
+
+	e3 := chain[3]
+	a.Empty(e3.Message)
+	a.Contains(e3.Location, "test_callers.go:11")
 }
 
 func TestFlattenStdlibErrorfWrappedError(t *testing.T) {
@@ -92,7 +124,7 @@ func TestFlattenStdlibErrorfWrappedError(t *testing.T) {
 	full := err.Error()
 
 	a.Equal("failed to call function: errorf wrapped: stdlib sentinel error", full)
-	a.Len(chain, 3)
+	a.Len(chain, 5)
 
 	e0 := chain[0]
 	a.Equal("stdlib sentinel error", e0.Message)
@@ -100,11 +132,19 @@ func TestFlattenStdlibErrorfWrappedError(t *testing.T) {
 
 	e1 := chain[1]
 	a.Equal("errorf wrapped", e1.Message)
-	a.Contains(e1.Location, "test_callers.go:29")
+	a.Empty(e1.Location)
 
 	e2 := chain[2]
-	a.Equal("failed to call function", e2.Message)
-	a.Contains(e2.Location, "test_callers.go:20")
+	a.Empty(e2.Message)
+	a.Contains(e2.Location, "test_callers.go:29")
+
+	e3 := chain[3]
+	a.Equal("failed to call function", e3.Message)
+	a.Contains(e3.Location, "test_callers.go:20")
+
+	e4 := chain[4]
+	a.Empty(e4.Message)
+	a.Contains(e4.Location, "test_callers.go:11")
 }
 
 func TestFlattenStdlibErrorfWrappedExternalError(t *testing.T) {
@@ -115,7 +155,7 @@ func TestFlattenStdlibErrorfWrappedExternalError(t *testing.T) {
 	full := err.Error()
 
 	a.Equal("failed to call function: errorf wrapped external: external error wrapped with errorf: stdlib external error", full)
-	a.Len(chain, 4)
+	a.Len(chain, 6)
 
 	e0 := chain[0]
 	a.Equal("stdlib external error", e0.Message)
@@ -127,11 +167,19 @@ func TestFlattenStdlibErrorfWrappedExternalError(t *testing.T) {
 
 	e2 := chain[2]
 	a.Equal("errorf wrapped external", e2.Message)
-	a.Contains(e2.Location, "test_callers.go:29")
+	a.Empty(e2.Location)
 
 	e3 := chain[3]
-	a.Equal("failed to call function", e3.Message)
-	a.Contains(e3.Location, "test_callers.go:20")
+	a.Empty(e3.Message)
+	a.Contains(e3.Location, "test_callers.go:29")
+
+	e4 := chain[4]
+	a.Equal("failed to call function", e4.Message)
+	a.Contains(e4.Location, "test_callers.go:20")
+
+	e5 := chain[5]
+	a.Empty(e5.Message)
+	a.Contains(e5.Location, "test_callers.go:11")
 }
 
 func TestFlattenStdlibErrorfWrappedExternallyWrappedError(t *testing.T) {
