@@ -49,6 +49,14 @@ func Flatten(err error) Chain {
 		// exist to contain other errors that actually contain information,
 		// store the container's recorded location for usage with the next item.
 		case *container:
+			if _, ok := next.(*container); ok && unwrapped.location != "" {
+				// Having 2 containers back to back can happen if we're using .Wrap without using any wrappers. In that
+				// case, we add a Step to avoid losing the location whe the wrapping occurred
+				f = append([]Step{{
+					Location: unwrapped.location,
+					Message:  "",
+				}}, f...)
+			}
 			lastLocation = unwrapped.location
 
 		case *fundamental:
@@ -79,8 +87,6 @@ func Flatten(err error) Chain {
 				Location: lastLocation,
 				Message:  message,
 			}}, f...)
-
-			lastLocation = ""
 		}
 	}
 
