@@ -152,6 +152,12 @@ func TestWithMetaEmpty(t *testing.T) {
 	assert.Nil(t, data)
 }
 
+func TestWithMetaNilContext(t *testing.T) {
+	ctx := fctx.WithMeta(nil, "key", "value")
+
+	assert.Nil(t, ctx)
+}
+
 func TestWithMetaDifferentMapAddress(t *testing.T) {
 	ctx := context.Background()
 	err := errors.New("a problem")
