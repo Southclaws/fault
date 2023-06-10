@@ -44,6 +44,10 @@ func (e *withContext) String() string { return e.Error() }
 //		"post_id", postID,
 //	)
 func WithMeta(ctx context.Context, kv ...string) context.Context {
+	if ctx == nil {
+		return nil
+	}
+
 	data := make(map[string]string)
 
 	// overwrite any existing context metadata
@@ -90,8 +94,8 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 //			"role", "admin")
 //	}
 func Wrap(err error, ctx context.Context, kv ...string) error {
-	if err == nil {
-		return nil
+	if err == nil || ctx == nil {
+		return err
 	}
 
 	meta := make(map[string]string)
@@ -107,17 +111,15 @@ func Wrap(err error, ctx context.Context, kv ...string) error {
 	}
 
 	l := len(kv)
-	if l >= 2 {
-		if l%2 != 0 {
-			l -= 1 // don't error on odd number of args
-		}
+	if l%2 != 0 {
+		l -= 1 // don't error on odd number of args
+	}
 
-		for i := 0; i < l; i += 2 {
-			k := kv[i]
-			v := kv[i+1]
+	for i := 0; i < l; i += 2 {
+		k := kv[i]
+		v := kv[i+1]
 
-			meta[k] = v
-		}
+		meta[k] = v
 	}
 
 	return &withContext{err, meta}
@@ -205,6 +207,10 @@ func Unwrap(err error) map[string]string {
 //
 // Which will flatten out the KV metadata from the context into the log entry.
 func GetMeta(ctx context.Context) map[string]string {
+	if ctx == nil {
+		return nil
+	}
+
 	meta, ok := ctx.Value(contextKey{}).(map[string]string)
 	if !ok {
 		return nil
