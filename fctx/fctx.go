@@ -48,29 +48,8 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 		return nil
 	}
 
-	data := make(map[string]string)
-
 	// overwrite any existing context metadata
-	if parent, ok := ctx.Value(contextKey{}).(map[string]string); ok {
-		// make a copy to avoid mutating parent context data via map reference.
-		for k, v := range parent {
-			data[k] = v
-		}
-	}
-
-	l := len(kv)
-	if l%2 != 0 {
-		l -= 1 // don't error on odd number of args
-	}
-
-	for i := 0; i < l; i += 2 {
-		k := kv[i]
-		v := kv[i+1]
-
-		data[k] = v
-	}
-
-	return context.WithValue(ctx, contextKey{}, data)
+	return context.WithValue(ctx, contextKey{}, createMeta(ctx, kv...))
 }
 
 // Wrap wraps an error with the metadata stored in the context using `WithMeta`.
@@ -98,16 +77,17 @@ func Wrap(err error, ctx context.Context, kv ...string) error {
 		return err
 	}
 
+	return &withContext{err, createMeta(ctx, kv...)}
+}
+
+func createMeta(ctx context.Context, kv ...string) map[string]string {
 	meta := make(map[string]string)
 
-	parent, ok := ctx.Value(contextKey{}).(map[string]string)
-	if !ok {
-		return err
-	}
-
-	// make a copy to avoid mutating parent error data via map reference.
-	for k, v := range parent {
-		meta[k] = v
+	if parent, ok := ctx.Value(contextKey{}).(map[string]string); ok {
+		// make a copy to avoid mutating parent context meta via map reference.
+		for k, v := range parent {
+			meta[k] = v
+		}
 	}
 
 	l := len(kv)
@@ -122,13 +102,13 @@ func Wrap(err error, ctx context.Context, kv ...string) error {
 		meta[k] = v
 	}
 
-	return &withContext{err, meta}
+	return meta
 }
 
 // With implements the Fault Wrapper interface.
-func With(ctx context.Context) func(error) error {
+func With(ctx context.Context, kv ...string) func(error) error {
 	return func(err error) error {
-		return Wrap(err, ctx)
+		return Wrap(err, ctx, kv...)
 	}
 }
 
