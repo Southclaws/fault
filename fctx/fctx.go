@@ -60,7 +60,7 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 //
 //	user, err := database.GetUser(ctx, userID)
 //	if err != nil {
-//		return nil, fctx.Wrap(ctx, err, "role", "admin")
+//		return nil, fctx.Wrap(err, ctx, "role", "admin")
 //	}
 //
 // This library aims to be simple so there is no stack trace collection or
@@ -68,8 +68,8 @@ func WithMeta(ctx context.Context, kv ...string) context.Context {
 //
 //	user, err := database.GetUser(ctx, userID)
 //	if err != nil {
-//		return nil, fctx.Wrap(ctx,
-//			errors.Wrap(err, "failed to get user data"),
+//		return nil, fctx.Wrap(errors.Wrap(err, "failed to get user data"),
+//			ctx,
 //			"role", "admin")
 //	}
 func Wrap(err error, ctx context.Context, kv ...string) error {
