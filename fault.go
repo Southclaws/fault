@@ -99,8 +99,12 @@ func (f *container) Format(s fmt.State, verb rune) {
 }
 
 func getLocation() string {
-	_, file, line, _ := runtime.Caller(2)
-	return fmt.Sprintf("%s:%d", file, line)
+	pc := make([]uintptr, 1)
+	runtime.Callers(3, pc)
+	cf := runtime.CallersFrames(pc)
+	f, _ := cf.Next()
+
+	return fmt.Sprintf("%s:%d", f.File, f.Line)
 }
 
 // isInternalString returns true for messages like <fctx> which are placeholders
