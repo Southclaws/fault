@@ -4,18 +4,20 @@ import "fmt"
 
 // New creates a new basic fault error.
 func New(message string) error {
-	return &fundamental{
+	f := &fundamental{
 		msg:      message,
 		location: getLocation(),
 	}
+	return f
 }
 
 // Newf includes formatting specifiers.
 func Newf(message string, va ...any) error {
-	return &fundamental{
+	f := &fundamental{
 		msg:      fmt.Sprintf(message, va...),
 		location: getLocation(),
 	}
+	return f
 }
 
 type fundamental struct {
