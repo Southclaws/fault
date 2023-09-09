@@ -9,7 +9,7 @@ import (
 	"github.com/Southclaws/fault/ftag"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"go.uber.org/zap"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -43,24 +43,24 @@ func PathVariableAsFCtx(pathVarName, fctxName string) func(next http.Handler) ht
 	}
 }
 
-func fctxToZapFields(ctx context.Context) []zap.Field {
+func fctxToSlog(ctx context.Context) []any {
 	faultFields := fctx.GetMeta(ctx)
-	fields := make([]zap.Field, 0, len(faultFields))
+	fields := make([]any, 0, len(faultFields))
 	for k, v := range faultFields {
-		fields = append(fields, zap.String(k, v))
+		fields = append(fields, slog.String(k, v))
 	}
 	return fields
 }
 
-func LoggerRequest(logger *zap.Logger) func(next http.Handler) http.Handler {
+func LoggerRequest(logger *slog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 			t1 := time.Now()
 			defer func() {
-				fields := fctxToZapFields(r.Context())
-				fields = append(fields, zap.Int("status", ww.Status()))
-				fields = append(fields, zap.Duration("latency", time.Since(t1)))
+				fields := fctxToSlog(r.Context())
+				fields = append(fields, slog.Int("status", ww.Status()))
+				fields = append(fields, slog.Duration("latency", time.Since(t1)))
 				logger.Info("API Request", fields...)
 			}()
 			next.ServeHTTP(ww, r)
@@ -92,17 +92,17 @@ func toStackTrace(err error) string {
 }
 
 func RespondWithError(
-	logger *zap.Logger,
+	logger *slog.Logger,
 	err error,
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
 	tag := ftag.Get(err)
 
-	fields := fctxToZapFields(r.Context())
+	attrs := fctxToSlog(r.Context())
 	errStr := toStackTrace(err)
-	fields = append(fields, zap.String("error", err.Error()))
-	logger.Error("\n"+errStr, fields...)
+	attrs = append(attrs, slog.String("error", err.Error()))
+	logger.Error("\n"+errStr, attrs...)
 
 	// Using tags to determine http status based on the error
 	if tag == ftag.NotFound {

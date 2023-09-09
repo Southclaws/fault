@@ -9,21 +9,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"go.uber.org/zap"
+	"log/slog"
 	"net/http"
 )
 
 var ExistingUserID = "123"
 var ErrorUserID = "999"
-var logger *zap.Logger
+var logger *slog.Logger
 
 func init() {
-	log, err := zap.NewDevelopment(zap.AddStacktrace(zap.PanicLevel))
-	if err != nil {
-		panic(err)
-	}
-	logger = log
-
+	logger = slog.Default()
 	render.Respond = func(w http.ResponseWriter, r *http.Request, v interface{}) {
 		if _, ok := v.(error); ok {
 
