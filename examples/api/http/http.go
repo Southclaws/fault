@@ -16,7 +16,7 @@ import (
 )
 
 // Adding requestID in the fault context for logging purpose
-func RequestToFCtx(next http.Handler) http.Handler {
+func DecorateRequestMetadata(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		rid := middleware.GetReqID(ctx)
