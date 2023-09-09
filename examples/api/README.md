@@ -6,7 +6,7 @@ Asking for anything else will return a "NotFound" response.
 
 ## Running
 
-From the repository root, using golang 1.19+, run
+From the repository root, using golang 1.21+, run (because the slog package is needed).
 
 ```bash
 go run ./examples/api/main.go
@@ -21,21 +21,24 @@ curl http://localhost:3333/users/123 # will return a user in JSON
 
 Running each curl should produce the following logs
 ```
-2023-06-19T00:41:29.662-0400	ERROR	http/http.go:105
-	db error: connection lost
-		examples/api/main.go:58
-	Could not get user
-		examples/api/main.go:59
-	{"http_method": "GET", "request_id": "VRyQ76vHEy-000001", "request_path": "/users/999", "remote_ip": "127.0.0.1:51715", "protocol": "HTTP/1.1", "user_id": "999", "error": "Could not get user: db error: connection lost"}
-2023-06-19T00:41:29.662-0400	INFO	http/http.go:64	API Request	{"protocol": "HTTP/1.1", "http_method": "GET", "request_id": "VRyQ76vHEy-000001", "request_path": "/users/999", "remote_ip": "127.0.0.1:51715", "status": 500, "latency": "130.682µs"}
-2023-06-19T00:41:34.417-0400	ERROR	http/http.go:105
-	db error: user id[321] not found
-		examples/api/main.go:67
-	User not found
-		examples/api/main.go:68
-	{"user_id": "321", "remote_ip": "127.0.0.1:51716", "protocol": "HTTP/1.1", "request_id": "VRyQ76vHEy-000002", "http_method": "GET", "request_path": "/users/321", "error": "User not found: db error: user id[321] not found"}
-2023-06-19T00:41:34.417-0400	INFO	http/http.go:64	API Request	{"request_id": "VRyQ76vHEy-000002", "http_method": "GET", "request_path": "/users/321", "remote_ip": "127.0.0.1:51716", "protocol": "HTTP/1.1", "status": 404, "latency": "102.541µs"}
-2023-06-19T00:42:35.202-0400	INFO	http/http.go:64	API Request	{"http_method": "GET", "request_id": "VRyQ76vHEy-000003", "request_path": "/users/123", "remote_ip": "127.0.0.1:51724", "protocol": "HTTP/1.1", "status": 200, "latency": "107.706µs"}
+2023/09/09 11:05:06 ERROR 
+        db error: connection lost
+                examples/api/main.go:53
+        Could not get user
+                examples/api/main.go:54
+ http_method=GET user_id=999 request_id=It73FDo3WC-000005 request_path=/users/999 remote_ip=127.0.0.1:52246 protocol=HTTP/1.1 error="Could not get user: db error: connection lost"
+2023/09/09 11:05:06 INFO API Request request_id=It73FDo3WC-000005 request_path=/users/999 remote_ip=127.0.0.1:52246 protocol=HTTP/1.1 http_method=GET status=500 latency=96.25µs
+
+2023/09/09 11:05:25 ERROR 
+        db error: user id[321] not found
+                examples/api/main.go:62
+        User not found
+                examples/api/main.go:63
+ http_method=GET user_id=321 request_path=/users/321 remote_ip=127.0.0.1:52246 request_id=It73FDo3WC-000006 protocol=HTTP/1.1 error="User not found: db error: user id[321] not found"
+2023/09/09 11:05:25 INFO API Request protocol=HTTP/1.1 http_method=GET request_path=/users/321 remote_ip=127.0.0.1:52246 request_id=It73FDo3WC-000006 status=404 latency=65.306µs
+
+2023/09/09 11:06:28 INFO API Request protocol=HTTP/1.1 request_id=It73FDo3WC-000008 http_method=GET request_path=/users/123 remote_ip=127.0.0.1:52426 status=200 latency=46.562µs
+
 ```
 
 ## How
