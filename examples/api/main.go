@@ -76,7 +76,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
-	r.Use(apihttp.RequestToFCtx)
+	r.Use(apihttp.DecorateRequestMetadata)
 	r.Use(middleware.Recoverer)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 	r.Use(apihttp.LoggerRequest(logger))
