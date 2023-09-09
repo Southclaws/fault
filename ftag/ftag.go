@@ -57,6 +57,23 @@ func Get(err error) Kind {
 	return Internal
 }
 
+func GetAll(err error) []Kind {
+	if err == nil {
+		return nil
+	}
+
+	var ks []Kind
+	for err != nil {
+		if f, ok := err.(*withKind); ok {
+			ks = append(ks, f.tag)
+		}
+
+		err = errors.Unwrap(err)
+	}
+
+	return ks
+}
+
 // Common kinds of error:
 
 const (
