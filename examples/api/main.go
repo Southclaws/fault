@@ -81,5 +81,6 @@ func main() {
 		r.Get("/", GetUser)
 	})
 
+	fmt.Printf("Listening on :3333 ...\n")
 	http.ListenAndServe(":3333", r)
 }
