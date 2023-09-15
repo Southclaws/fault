@@ -22,18 +22,22 @@ curl http://localhost:3333/users/123 # will return a user in JSON
 Running each curl should produce the following logs
 ```
 2023/09/09 11:05:06 ERROR 
-        db error: connection lost
-                examples/api/main.go:53
-        Could not get user
-                examples/api/main.go:54
+db error: connection lost
+	examples/api/main.go:53
+Could not get user
+	examples/api/main.go:54
+<ftag>
+	examples/api/main.go:54
  http_method=GET user_id=999 request_id=It73FDo3WC-000005 request_path=/users/999 remote_ip=127.0.0.1:52246 protocol=HTTP/1.1 error="Could not get user: db error: connection lost"
 2023/09/09 11:05:06 INFO API Request request_id=It73FDo3WC-000005 request_path=/users/999 remote_ip=127.0.0.1:52246 protocol=HTTP/1.1 http_method=GET status=500 latency=96.25µs
 
 2023/09/09 11:05:25 ERROR 
-        db error: user id[321] not found
-                examples/api/main.go:62
-        User not found
-                examples/api/main.go:63
+db error: user id[321] not found
+    examples/api/main.go:62
+User not found
+    examples/api/main.go:63
+<ftag>
+    examples/api/main.go:63
  http_method=GET user_id=321 request_path=/users/321 remote_ip=127.0.0.1:52246 request_id=It73FDo3WC-000006 protocol=HTTP/1.1 error="User not found: db error: user id[321] not found"
 2023/09/09 11:05:25 INFO API Request protocol=HTTP/1.1 http_method=GET request_path=/users/321 remote_ip=127.0.0.1:52246 request_id=It73FDo3WC-000006 status=404 latency=65.306µs
 

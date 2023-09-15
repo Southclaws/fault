@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/Southclaws/fault"
 	"github.com/Southclaws/fault/fctx"
 	"github.com/Southclaws/fault/fmsg"
 	"github.com/Southclaws/fault/ftag"
@@ -11,7 +10,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -70,27 +68,6 @@ func LoggerRequest(logger *slog.Logger) func(next http.Handler) http.Handler {
 
 }
 
-func isInternalString(s string) bool {
-	return strings.HasPrefix(s, "<") && strings.HasSuffix(s, ">")
-}
-
-func toStackTrace(err error) string {
-	var sb strings.Builder
-	u := fault.Flatten(err)
-	for _, v := range u {
-		if isInternalString(v.Message) {
-			continue
-		}
-		if v.Message != "" {
-			sb.WriteString(fmt.Sprintf("\t%s\n", v.Message))
-		}
-		if v.Location != "" {
-			sb.WriteString(fmt.Sprintf("\t\t%s\n", v.Location))
-		}
-	}
-	return sb.String()
-}
-
 func RespondWithError(
 	logger *slog.Logger,
 	err error,
@@ -100,7 +77,7 @@ func RespondWithError(
 	tag := ftag.Get(err)
 
 	attrs := fctxToSlog(r.Context())
-	errStr := toStackTrace(err)
+	errStr := fmt.Sprintf("%+v", err)
 	attrs = append(attrs, slog.String("error", err.Error()))
 	logger.Error("\n"+errStr, attrs...)
 
