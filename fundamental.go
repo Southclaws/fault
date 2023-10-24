@@ -3,12 +3,18 @@ package fault
 import "fmt"
 
 // New creates a new basic fault error.
-func New(message string) error {
+func New(message string, w ...Wrapper) error {
 	f := &fundamental{
 		msg:      message,
 		location: getLocation(),
 	}
-	return f
+
+	var err error = f
+	for _, fn := range w {
+		err = fn(err)
+	}
+
+	return err
 }
 
 // Newf includes formatting specifiers.
