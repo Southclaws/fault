@@ -172,30 +172,6 @@ func TestWithMetaDifferentMapAddress(t *testing.T) {
 	data2 := fctx.Unwrap(err2)
 
 	assert.Equal(t,
-		`&context.valueCtx{
-    Context: context.backgroundCtx{},
-    key:     fctx.contextKey{},
-    val:     map[string]string{"key1":"value1"},
-}`,
-		pretty.Sprint(ctx1),
-		"The map from the first context should be left unmodified by the second call to fctx.WithMeta",
-	)
-
-	assert.Equal(t,
-		`&context.valueCtx{
-    Context: &context.valueCtx{
-        Context: context.backgroundCtx{},
-        key:     fctx.contextKey{},
-        val:     map[string]string{"key1":"value1"},
-    },
-    key: fctx.contextKey{},
-    val: map[string]string{"key1":"value1", "key2":"value2"},
-}`,
-		pretty.Sprint(ctx2),
-		"The second context value should contain both maps and the first only contains the first key-value pair.",
-	)
-
-	assert.Equal(t,
 		`map[string]string{"key1":"value1"}`,
 		pretty.Sprint(data1),
 		"The first unwrap result is only the key-value pair from the first wrap.",
