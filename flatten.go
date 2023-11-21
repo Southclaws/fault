@@ -2,7 +2,6 @@ package fault
 
 import (
 	"errors"
-	"strings"
 )
 
 // Chain represents an unwound error chain. Each step is a useful error. Errors
@@ -70,17 +69,11 @@ func Flatten(err error) Chain {
 		default:
 			message := err.Error()
 
-			// de-duplicate nested error messages
+			// de-duplicate identical error messages
 			if next != nil {
-				if idx := strings.Index(message, next.Error()); idx != -1 {
-					// cut off the duplicate message and remove the separator.
-					message = strings.Trim(message[:idx], ": ")
+				if message == next.Error() {
+					continue
 				}
-			}
-
-			// the entire error message was a duplicate, skip.
-			if message == "" {
-				continue
 			}
 
 			f = append([]Step{{

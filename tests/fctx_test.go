@@ -173,7 +173,7 @@ func TestWithMetaDifferentMapAddress(t *testing.T) {
 
 	assert.Equal(t,
 		`&context.valueCtx{
-    Context: &context.emptyCtx(0),
+    Context: context.backgroundCtx{},
     key:     fctx.contextKey{},
     val:     map[string]string{"key1":"value1"},
 }`,
@@ -184,7 +184,7 @@ func TestWithMetaDifferentMapAddress(t *testing.T) {
 	assert.Equal(t,
 		`&context.valueCtx{
     Context: &context.valueCtx{
-        Context: &context.emptyCtx(0),
+        Context: context.backgroundCtx{},
         key:     fctx.contextKey{},
         val:     map[string]string{"key1":"value1"},
     },
