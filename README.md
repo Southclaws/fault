@@ -4,6 +4,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Southclaws/fault)](https://goreportcard.com/report/github.com/Southclaws/fault)
 [![codecov](https://codecov.io/gh/Southclaws/fault/branch/main/graph/badge.svg?token=U06OABVKm3)](https://codecov.io/gh/Southclaws/fault)
 
+> Used in production at [Storyden](https://github.com/Southclaws/storyden) - an open source forum+wiki written in Go!
+
 Fault provides an extensible yet ergonomic mechanism for wrapping errors. It implements this as a kind of middleware style pattern of simple functions called **decorators**: `func(error) error`. A decorator simply wraps an error within another error, much like many libraries do.
 
 What this facilitates is a simple, minimal and (most important) _composable_ collection of error handling utilities designed to help you **diagnose problems** in your application logic without the need for overly verbose stack traces.
