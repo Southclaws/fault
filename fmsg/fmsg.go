@@ -2,6 +2,7 @@ package fmsg
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -36,6 +37,13 @@ func Wrap(err error, internal, external string) error {
 func With(internal string) func(error) error {
 	return func(err error) error {
 		return Wrap(err, internal, "")
+	}
+}
+
+// Withf is a shorthand for With(fmt.Sprintf()). See `With` for more details.
+func Withf(internal string, va ...any) func(error) error {
+	return func(err error) error {
+		return Wrap(err, fmt.Sprintf(internal, va...), "")
 	}
 }
 
