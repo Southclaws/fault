@@ -111,15 +111,16 @@ This simple utility gives you the ability to decorate error chains with a separa
 
 The error messages returned by `.Error()` are always intended for developers to read. They are rarely exposed to end-users. When they are, it's usually fairly confusing and not a great user-experience.
 
-You can use `fmsg.With` to wrap an error with an extra string of text, just like pkg/errors and similar:
+You can use `fmsg.With` (or `fmsg.Withf` if you need formatted string) to wrap an error with an extra string of text, just like pkg/errors and similar:
 
 ```go
+extraContext := "extra context"
 err := errors.New("root")
 err = fault.Wrap(err, fmsg.With("one"))
-err = fault.Wrap(err, fmsg.With("two"))
+err = fault.Wrap(err, fmsg.Withf("two (%s)", extraContext))
 err = fault.Wrap(err, fmsg.With("three"))
 fmt.Println(err)
-// three: two: one: root
+// three: two (extra context): one: root
 ```
 
 As with any simple error wrapping library, the `.Error()` function simply joins these messages together with `:`.
